@@ -422,9 +422,6 @@ class MainMessagePage {
                     }
                 })
             })
-
-            
-
             resolve()
         })
     }
