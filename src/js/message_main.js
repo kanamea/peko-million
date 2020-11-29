@@ -93,9 +93,58 @@ class MainMessagePage {
 
         return new Promise((resolve, reject) => {
             app.loader.add(img_basic).load((loader, resource) => {
+                // draw loading page
+                let loading_cont = new PIXI.Container()
+
+                let loading_style = new PIXI.TextStyle({
+                    fontFamily: "Courier",
+                    fontSize: 50 * (this.#width / this.base_width),
+                    fill: 0x000000
+                })
+
+                let loading = new PIXI.Graphics()
+                let loading_bar = new PIXI.Graphics()
+                let loading_text = new PIXI.Text("Loading...", loading_style)
+                let prog = 0
+
+                loading_text.anchor.x = .5
+                loading_text.anchor.y = .5
+
+                loading_text.x = this.#width / 2
+                loading_text.y = this.#height / 2
+
+                loading.beginFill(0xFFFFFF, .5)
+                loading.drawRect(-5, -5, this.#width + 10, this.#height + 10)
+                loading.endFill()
+
+                loading_bar.beginFill(0xFFA657)
+                loading_bar.drawRect(0, 0, loading_text.width, 10 * this.#width / this.base_width)
+                loading_bar.endFill()
+
+                loading_bar.pivot.x = loading_text.width / 2
+                loading_bar.pivot.y = 0
+
+                loading_bar.x = loading_text.x
+                loading_bar.y = loading_text.y + loading_text.height / 2 + 5 * this.#width / this.base_width
+
+                loading_bar.scale.x = 0
+
+                loading_cont.addChild(loading)
+                loading_cont.addChild(loading_text)
+                loading_cont.addChild(loading_bar)
+
+                loading_cont.zIndex = Number.MAX_SAFE_INTEGER
+
+                app.stage.addChild(loading_cont)
+
                 loader.add(img_src).load((l, r) => {
                     this.#state = this.States.main
+                    loading_cont.destroy()
                 })
+                loader.onLoad.add(() => {
+                    loading_bar.scale.x = prog / img_basic.length
+                })
+                
                 this.#sprites = new Map()
                 this.#scroll = new Map()
 
