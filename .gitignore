@@ -1,0 +1,13 @@
+dist/**
+node_modules/**
+public/*
+scripts/img/*
+scripts/data
+scripts/loader.js
+src/profile/*
+
+dist/
+node_modules/
+public/
+scripts/img/
+src/profile/
