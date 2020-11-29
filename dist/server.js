@@ -1,0 +1,1 @@
+(()=>{"use strict";const e=require("path"),s=require("express"),t=s(),i=__dirname,n=e.join(i,"index.html");t.use(s.static(i)),t.get("*",((e,s)=>{s.sendFile(n)}));const o=process.env.PORT||8080;t.listen(o,(()=>{console.log(`App listening to ${o}....`),console.log("Press Ctrl+C to quit.")}))})();
