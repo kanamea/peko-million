@@ -47,6 +47,8 @@
     "gulp": "gulp dwebp squash",
     "startDev": "webpack serve --mode development --config webpack.dev.config.js",
     "startProd": "node ./dist/server.js",
+    "git": "git add . && git commit -m \"update server\" && git push origin main",
+    "update": "npm-run-all clean gulp buildProd git",
     "dev": "npm-run-all clean gulp buildDev startDev",
     "prod": "npm-run-all clean gulp buildProd startProd",
     "start": "node ./dist/server.js"
