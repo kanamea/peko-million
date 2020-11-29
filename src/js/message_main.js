@@ -8,7 +8,8 @@ class MainMessagePage {
     static States = Object.freeze({
         main: "main",
         pekomon_select: "pekomon_select",
-        art_view: "art_view"
+        art_view: "art_view",
+        loading: "loading"
     })
 
     static AnimationStates = Object.freeze({
@@ -47,7 +48,7 @@ class MainMessagePage {
     static async #initialize(app) {
         // get the data necessary from the database
         this.#msgs = await Database.get_messages({})
-        this.#state = this.States.main
+        this.#state = this.States.loading
         this.#is_drag = false
 
         this.#width = app.renderer.width
@@ -56,9 +57,6 @@ class MainMessagePage {
         this.#app = app
 
         let img_src = [
-            './img/pekora.json',
-            './img/pekomon.json',
-            './img/pekomon_hl.json',
             './profile/Africa.png',
             './profile/Central America.png',
             './profile/Central Asia.png',
@@ -77,6 +75,12 @@ class MainMessagePage {
             './profile/default_ava.png'
         ]
 
+        let img_basic = [
+            './img/pekora.json',
+            './img/pekomon.json',
+            './img/pekomon_hl.json'
+        ]
+
         this.#msgs.forEach((el) => {
             if (el.has_avatar === 0) {
                 img_src.push(el.avatar)
@@ -88,7 +92,10 @@ class MainMessagePage {
         })
 
         return new Promise((resolve, reject) => {
-            app.loader.add(img_src).load((loader, resource) => {
+            app.loader.add(img_basic).load((loader, resource) => {
+                loader.add(img_src).load((l, r) => {
+                    this.#state = this.States.main
+                })
                 this.#sprites = new Map()
                 this.#scroll = new Map()
 
@@ -214,25 +221,25 @@ class MainMessagePage {
                     if (this.#clicked) {
                         if (event.keyCode === 37) {
                             this.#msg_index = (((this.#msg_index + 1) % this.#pekomons.length) + this.#pekomons.length) % this.#pekomons.length
-                            this.#pekomons[this.#msg_index].sprite.click()
+                            this.#pekomons[this.#msg_index].sprite.pointertap()
                             return
                         }
-    
+
                         if (event.keyCode === 39) {
                             this.#msg_index = (((this.#msg_index - 1) % this.#pekomons.length) + this.#pekomons.length) % this.#pekomons.length
-                            this.#pekomons[this.#msg_index].sprite.click()
+                            this.#pekomons[this.#msg_index].sprite.pointertap()
                             return
                         }
 
                         let scroll = this.#scroll.get(this.#pekomons[this.#msg_index].info.id)
 
                         if (event.keyCode === 38 && scroll[0].visible) {
-                            scroll[0].click()
+                            scroll[0].pointertap()
                             return
                         }
 
                         if (event.keyCode === 40 && scroll[1].visible) {
-                            scroll[1].click()
+                            scroll[1].pointertap()
                             return
                         }
                     }
@@ -364,9 +371,11 @@ class MainMessagePage {
                         this.#counter = 0
                     }
                 })
-
-                resolve()
             })
+
+            
+
+            resolve()
         })
     }
 
@@ -439,17 +448,17 @@ class MainMessagePage {
         let field = new PIXI.Graphics()
 
         field.beginFill(0x4cb3cf)
-        field.drawRect(0, field_height, this.#width, edge_height)
+        field.drawRect(0, field_height * this.#height / this.base_height, this.#width, edge_height * this.#height / this.base_height)
         field.endFill()
         field.beginFill(0x56dbff)
-        field.drawRect(0, 0, this.#width, field_height)
+        field.drawRect(0, 0, this.#width, field_height * this.#height / this.base_height)
         field.endFill()
         field.beginFill(0xFFFFFF, .3)
         field.drawPolygon([
             0, 0,
-            field_height + this.#width / 6, 0,
-            this.#width / 6, field_height,
-            0, field_height
+            field_height * this.#height / this.base_height + this.#width / 6, 0,
+            this.#width / 6, field_height * this.#height / this.base_height,
+            0, field_height * this.#height / this.base_height
         ])
         field.endFill()
 
@@ -595,7 +604,7 @@ class MainMessagePage {
             pekomon_name_plate.visible = false
 
             // mouse-over, change the texture from regular pekora to highlight pekora
-            pekomon.mouseover = () => {
+            pekomon.pointerover = () => {
                 switch (this.#state) {
                     case this.States.main:
                         this.#sprites.get("pekomons_hl").forEach((el) => {
@@ -608,7 +617,7 @@ class MainMessagePage {
                 }
             }
 
-            pekomon.mouseout = () => {
+            pekomon.pointerout = () => {
                 switch (this.#state) {
                     case this.States.main:
                         this.#sprites.get("pekomons_hl").forEach((el) => {
@@ -623,7 +632,7 @@ class MainMessagePage {
                 }
             }
 
-            pekomon.click = () => {
+            pekomon.pointertap = () => {
                 switch (this.#state) {
                     case this.States.main:
                         this.#sprites.get("organize").visible = true
@@ -632,7 +641,6 @@ class MainMessagePage {
                         this.#pekomons.forEach((el) => {
                             if (el.sprite_hl !== pekomon_hl) {
                                 el.sprite_hl.alpha = 0
-                                el.detail_message.visible = false
                             }
                         })
 
@@ -644,28 +652,31 @@ class MainMessagePage {
                             }
                         })
 
+                        if (this.#sprites.get("detailed_message") !== null && this.#sprites.get("detailed_message") !== undefined) {
+                            this.#sprites.get("detailed_message").destroy()
+                        }
+
                         this.#sprites.get("pekora").x = this.#width / 8 * 4 + (index + 2) * 200.0;
                         this.#animation_state = this.AnimationStates.moving_pekomon
 
                         this.#clicked = true
-                        this.#pekomons[index].detail_message.visible = true
+
+                        let spr = this.#draw_detailed_message(element, 900 * (this.#width / this.base_width), 600 * (this.#width / this.base_width), pekomon.x, this.#height / 32 * 25)
+                        this.#pekomons[index].detail_message = spr
 
                         pekomon_hl.alpha = 1
                         this.#msg_index = index
                         this.#sprites.set("detailed_message", this.#pekomons[index].detail_message)
+                        app.stage.addChild(spr)
                         break
                 }
             }
-
-            let spr = this.#draw_detailed_message(element, 900 * (this.#width / this.base_width), 600 * (this.#width / this.base_width), pekomon.x, this.#height / 32 * 25)
-            spr.visible = false
 
             pekomons.push({
                 info: element,
                 sprite: pekomon,
                 sprite_hl: pekomon_hl,
-                sprite_name: pekomon_name_plate,
-                detail_message: spr
+                sprite_name: pekomon_name_plate
             })
         })
 
@@ -673,12 +684,10 @@ class MainMessagePage {
         this.#sprites.set("pekomons", [])
         this.#sprites.set("pekomons_hl", [])
         this.#sprites.set("pekomons_name", [])
-        this.#sprites.set("details", [])
         pekomons.forEach((element) => {
             this.#sprites.get("pekomons").push(element.sprite)
             this.#sprites.get("pekomons_hl").push(element.sprite_hl)
             this.#sprites.get("pekomons_name").push(element.sprite_name)
-            this.#sprites.get("details").push(element.detail_message)
         })
     }
 
@@ -822,15 +831,15 @@ class MainMessagePage {
             individual_button.addChild(text_hl)
 
             individual_button.interactive = true
-            individual_button.mouseover = () => {
+            individual_button.pointerover = () => {
                 bg_hl.visible = true
                 text_hl.visible = true
             }
-            individual_button.mouseout = () => {
+            individual_button.pointerout = () => {
                 bg_hl.visible = false
                 text_hl.visible = false
             }
-            individual_button.click = click_event[i]
+            individual_button.pointertap = click_event[i]
 
             individual_button.x = 0
             individual_button.y = button_height * (i-buttons.length +1) - button_height / 2 - 10
@@ -1048,7 +1057,7 @@ class MainMessagePage {
             message_up.interactive = true
             message_down.interactive = true
 
-            message_up.click = () => {
+            message_up.pointertap = () => {
                 let offset = 20
                 let content = null
 
@@ -1067,7 +1076,7 @@ class MainMessagePage {
                 }
             }
 
-            message_down.click = () => {
+            message_down.pointertap = () => {
                 let offset = 20
                 let content = null
 
@@ -1153,7 +1162,7 @@ class MainMessagePage {
 
         if (art.visible) {
             art_bg.interactive = true
-            art_bg.click = () => {
+            art_bg.pointertap = () => {
                 if (this.#state !== this.States.art_view) {
                     this.#state = this.States.art_view
                     MainMessagePage.draw_art(art_texture)
@@ -1238,17 +1247,17 @@ class MainMessagePage {
         twitter_cont.y = height / 20
 
         twitter_cont.interactive = info.has_twitter === 0
-        twitter_cont.click = () => {
+        twitter_cont.pointertap = () => {
             let wind = window.open(info.twitter)
             wind.focus()
         }
 
-        twitter_cont.mouseover = () => {
+        twitter_cont.pointerover = () => {
             twitter_cont.scale.x = twitter_cont.scale.x * 1.2
             twitter_cont.scale.y = twitter_cont.scale.y * 1.2
         }
 
-        twitter_cont.mouseout = () => {
+        twitter_cont.pointerout = () => {
             twitter_cont.scale.x = twitter_cont.scale.x / 1.2
             twitter_cont.scale.y = twitter_cont.scale.y / 1.2
         }
@@ -1294,17 +1303,17 @@ class MainMessagePage {
         translate_cont.y = height / 20
 
         translate_cont.interactive = info.alt_message !== null
-        translate_cont.mouseover = () => {
+        translate_cont.pointerover = () => {
             translate_cont.scale.x = translate_cont.scale.x * 1.2
             translate_cont.scale.y = translate_cont.scale.y * 1.2
         }
 
-        translate_cont.mouseout = () => {
+        translate_cont.pointerout = () => {
             translate_cont.scale.x = translate_cont.scale.x / 1.2
             translate_cont.scale.y = translate_cont.scale.y / 1.2
         }
 
-        translate_cont.click = () => {
+        translate_cont.pointertap = () => {
             if (translate_icon.texture === translate_texture) {
                 translate_icon.texture = translate_texture_grey
                 this.#type = "orig"
@@ -1330,8 +1339,6 @@ class MainMessagePage {
         let occupied_height = art_bg.height + map.height + icon_container.height + 5
         let total_left_over = total_height - occupied_height
         let intervals = total_left_over / 2
-        
-        console.log(icon_container.height)
         
         art.y = art_margin + art_margin2 + line_width
         art_bg.y = art_margin
@@ -1434,13 +1441,13 @@ class MainMessagePage {
         art.y = this.#height / 2
 
         bg_shadow.interactive = true
-        bg_shadow.click = () => {
+        bg_shadow.pointertap = () => {
             this.#sprites.get("art").destroy()
             this.#state = this.States.pekomon_select
         }
 
         bg_del.interactive = true
-        bg_del.click = () => {
+        bg_del.pointertap = () => {
             this.#sprites.get("art").destroy()
             this.#state = this.States.pekomon_select
         }

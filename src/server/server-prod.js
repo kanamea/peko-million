@@ -1,8 +1,6 @@
 import * as path from 'path'
 import * as express from 'express'
 
-
-
 const app = express()
 const DIST_DIR = __dirname
 const HTML_FILE = path.join(DIST_DIR, 'index.html')
