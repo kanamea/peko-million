@@ -196,19 +196,19 @@ class MainMessagePage {
 
                 // event handlers
                 // drag
-                window.onmousedown = (event) => {
+                window.onpointerdown = (event) => {
                     this.#start_drag_x = event.pageX
                     this.#initial_pekora = this.#sprites.get("pekora").x
                     this.#offset_drag_x = 0
                     this.#is_drag = true
                 }
 
-                window.onmouseup = () => {
+                window.onpointerup = () => {
                     this.#is_drag = false
                     this.#sprites.get("pekora").scale.x = Math.abs(this.#sprites.get("pekora").scale.x)
                 }
 
-                window.onmousemove = (event) => {
+                window.onpointermove = (event) => {
                     this.#offset_drag_x = event.pageX - this.#start_drag_x
                     if (this.#state === this.States.pekomon_select) {
                         this.#animation_state = this.AnimationStates.moving_pekomon
