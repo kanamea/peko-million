@@ -4,6 +4,7 @@ import MainMessagePage from './js/message_main.js'
 // The application will create a renderer using WebGL, if possible,
 // with a fallback to a canvas render. It will also setup the ticker
 // and the root stage PIXI.Container
+screen.orientation.lock("landscape-primary")
 const app = new PIXI.Application();
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
