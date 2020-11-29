@@ -48,7 +48,8 @@
     "startDev": "webpack serve --mode development --config webpack.dev.config.js",
     "startProd": "node ./dist/server.js",
     "dev": "npm-run-all clean gulp buildDev startDev",
-    "prod": "npm-run-all clean gulp buildProd startProd"
+    "prod": "npm-run-all clean gulp buildProd startProd",
+    "start": "node ./dist/server.js"
   },
   "keywords": [],
   "author": "",
