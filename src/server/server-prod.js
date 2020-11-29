@@ -1,5 +1,6 @@
 import * as path from 'path'
 import * as express from 'express'
+import * as sslRedirect from 'heroku-ssl-redirect'
 
 const app = express()
 const DIST_DIR = __dirname
@@ -7,13 +8,7 @@ const HTML_FILE = path.join(DIST_DIR, 'index.html')
 
 app.use(express.static(DIST_DIR))
 
-app.use((req, res, next) => {
-    if (req.headers['x-forwarded-proto'] !== 'https') {
-        return next()
-    } else {
-        return res.redirect('https://' + req.headers.host + req.url)
-    }
-})
+app.use(sslRedirect())
 
 app.get('*', (req, res) => {
     res.sendFile(HTML_FILE)

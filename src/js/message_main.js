@@ -118,7 +118,7 @@ class MainMessagePage {
                 loading.endFill()
 
                 loading_bar.beginFill(0xFFA657)
-                loading_bar.drawRect(0, 0, loading_text.width, 10 * this.#width / this.base_width)
+                loading_bar.drawRect(0, 0, this.#width + 5, 10 * this.#width / this.base_width)
                 loading_bar.endFill()
 
                 loading_bar.pivot.x = loading_text.width / 2
@@ -143,7 +143,7 @@ class MainMessagePage {
                 })
                 loader.onLoad.add(() => {
                     prog += 1
-                    loading_bar.scale.x = prog / img_basic.length
+                    loading_bar.scale.x = prog / img_src.length
                 })
                 
                 this.#sprites = new Map()
