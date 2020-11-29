@@ -8,8 +8,7 @@ const HTML_FILE = path.join(DIST_DIR, 'index.html')
 app.use(express.static(DIST_DIR))
 
 app.use((req, res, next) => {
-    console.log(req.secure)
-    if (req.secure) {
+    if (req.headers['x-forwarded-proto'] !== 'https') {
         next()
     } else {
         res.redirect('https://' + req.headers.host + req.url)
