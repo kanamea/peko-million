@@ -142,6 +142,7 @@ class MainMessagePage {
                     loading_cont.destroy()
                 })
                 loader.onLoad.add(() => {
+                    prog += 1
                     loading_bar.scale.x = prog / img_basic.length
                 })
                 
