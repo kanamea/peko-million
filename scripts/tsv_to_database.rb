@@ -125,7 +125,7 @@ def tsv_to_database(tsv_file)
 
         id += 1
         if username == nil
-            anon_cnt = 1
+            anon_cnt += 1
 
             while manual_anon_id.include?(anon_cnt.to_s)
                 anon_cnt += 1

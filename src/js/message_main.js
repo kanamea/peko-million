@@ -47,6 +47,7 @@ class MainMessagePage {
     static #bgm = new Audio('./bgm/pekorap.mp3')
     static #ui_texts
     static #lang
+    static #msg_x_index
 
     // initialize page
     static async #initialize(app) {
@@ -276,8 +277,10 @@ class MainMessagePage {
                 }
 
                 window.onpointerup = () => {
+                    if (Math.abs(this.#offset_drag_x) > this.#width / 3) {
+                        this.#msg_index = null
+                    }
                     this.#is_drag = false
-                    this.#sprites.get("pekora").scale.x = Math.abs(this.#sprites.get("pekora").scale.x)
                 }
 
                 window.onpointermove = (event) => {
@@ -292,14 +295,14 @@ class MainMessagePage {
 
                     if (this.#clicked) {
                         if (event.keyCode === 37) {
-                            this.#msg_index = (((this.#msg_index + 1) % this.#pekomons.length) + this.#pekomons.length) % this.#pekomons.length
+                            this.#msg_index = (((this.#msg_x_index + 1) % this.#pekomons.length) + this.#pekomons.length) % this.#pekomons.length
                             this.#animation_state = this.AnimationStates.moving_pekomon
                             this.#pekomons[this.#msg_index].sprite.pointertap()
                             return
                         }
 
                         if (event.keyCode === 39) {
-                            this.#msg_index = (((this.#msg_index - 1) % this.#pekomons.length) + this.#pekomons.length) % this.#pekomons.length
+                            this.#msg_index = (((this.#msg_x_index - 1) % this.#pekomons.length) + this.#pekomons.length) % this.#pekomons.length
                             this.#animation_state = this.AnimationStates.moving_pekomon
                             this.#pekomons[this.#msg_index].sprite.pointertap()
                             return
@@ -390,7 +393,7 @@ class MainMessagePage {
                         if (this.#msg_index !== null && this.#msg_index !== undefined) {
                             pek_dest_x = this.#width / 8 * 4 + (this.#msg_index + 2) * 200.0;
                         } else {
-                            pek_dest_x = this.#width / 8 * 7
+                            pek_dest_x = this.#sprites.get("pekora").x
                         }
 
                         let velocity = 100
@@ -443,7 +446,7 @@ class MainMessagePage {
                                 el.sprite_name.y = el.sprite.y
                             }
 
-                            if (i === this.#msg_index && this.#sprites.get("detailed_message") !== null && this.#sprites.get("detailed_message") !== undefined) {
+                            if (i === this.#msg_x_index && this.#sprites.get("detailed_message") !== null && this.#sprites.get("detailed_message") !== undefined) {
                                 this.#sprites.get("detailed_message").x = el.sprite.x
                             }
 
@@ -766,6 +769,7 @@ class MainMessagePage {
 
                         pekomon_hl.alpha = 1
                         this.#msg_index = index
+                        this.#msg_x_index = index
                         this.#sprites.set("detailed_message", this.#pekomons[index].detail_message)
                         app.stage.addChild(spr)
                         break
@@ -964,7 +968,15 @@ class MainMessagePage {
                     text_en_hl.visible = false
                 }
             }
-            individual_button.pointertap = click_event[i]
+            individual_button.pointertap = () => {
+                if (this.#lang === "japanese") {
+                    text_jp_hl.visible = false
+                } else {
+                    text_en_hl.visible = false
+                }
+
+                click_event[i]()
+            }
 
             individual_button.x = 0
             individual_button.y = button_height * (i-buttons_en.length +1) - button_height / 2 - 10
