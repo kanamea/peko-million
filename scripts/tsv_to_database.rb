@@ -1,5 +1,6 @@
 require 'csv'
 require 'open-uri'
+require 'rmagick'
 
 def tsv_to_database(tsv_file)
     # iterate through tsv
@@ -25,11 +26,14 @@ def tsv_to_database(tsv_file)
     end
 
     CSV.foreach(tsv_file, headers: :first_row, internal_encoding: 'UTF-8') do |line|
+        pp "Parsing ##{id}..."
         timestamp, profile_pic, username, region, fan_art, twitter, message, alt_message = line.map { |x| x[1]}
 
         # try to grab art from link
         has_avatar = 0
         ava_ext = nil
+        frame_count_art = 0
+        frame_count_ava = 0
 
         if profile_pic != nil && profile_pic != ""
             begin
@@ -50,6 +54,12 @@ def tsv_to_database(tsv_file)
             end
         else
             has_avatar = 1
+        end
+
+        # if it's a gif, get frame count
+        if ava_ext == ".gif"
+            i = Magick::ImageList.new("./img/#{id}_ava#{ava_ext}")
+            frame_count_ava = i.length
         end
 
         has_fan_art = 0
@@ -74,6 +84,12 @@ def tsv_to_database(tsv_file)
             end
         else   
             has_fan_art = 1
+        end
+
+        # if it's a gif, get frame count
+        if art_ext == ".gif"
+            i = Magick::ImageList.new("./img/#{id}_art#{art_ext}")
+            frame_count_art = i.length
         end
 
         has_twitter = 0
@@ -103,24 +119,34 @@ def tsv_to_database(tsv_file)
         database += "{\n"
         database += "\tid: #{id},\n"
         database += "\tname: \"#{if username == nil then "Anonymous Nousagi ##{anon_cnt.to_s.rjust(3, "0")}" else username.gsub("\"", "\\\"").gsub("\n", "\\n") end}\",\n"
-        database += "\thas_avatar: #{has_avatar},\n"
         database += "\tmessage: \"#{message.gsub("\"", "\\\"").gsub("\n", "\\n").gsub("\r", "")}\",\n"
         database += "\talt_message: #{if alt_message == nil then "null" else "\"#{alt_message.gsub("\"", "\\\"").gsub("\n", "\\n").gsub("\r", "")}\"" end},\n"
         database += "\thas_twitter: #{has_twitter},\n"
         database += "\ttwitter: \"#{twitter_link}\",\n"
-        database += "\thas_fan_art: #{has_fan_art},\n"
         database += "\tread: false,\n"
         database += "\tregion: \"#{if region == nil then "None" else region end}\",\n"
+        database += "\thas_avatar: #{has_avatar},\n"
+        database += "\thas_fan_art: #{has_fan_art},\n"
         database += "\tavatar: #{if has_avatar == 0 then "\"./profile/#{id}_ava#{if ava_ext == ".webp" then ".png" else ava_ext end}\"" else "null" end},\n"
         database += "\tfan_art: #{if has_fan_art == 0 then "\"./profile/#{id}_art#{if art_ext == ".webp" then ".png" else art_ext end}\"" else "null" end},\n"
+        database += "\thas_gif_avatar: #{ava_ext == ".gif"},\n"
+        database += "\thas_gif_fan_art: #{art_ext == ".gif"},\n"
+        database += "\tava_frame_count: #{frame_count_ava},\n"
+        database += "\tart_frame_count: #{frame_count_art},\n"
         database += "},\n"
 
-        if has_avatar == 0
+        if has_avatar == 0 && ava_ext != ".gif"
             loader += "const i#{id}_ava = require('./profile/#{id}_ava#{if ava_ext == ".webp" then ".png" else ava_ext end}')\n"
+        elsif has_avatar == 0
+            loader += "const i#{id}_ava_png = require('./profile/#{id}_ava.png')\n"
+            loader += "const i#{id}_ava_json = require('./profile/#{id}_ava.json')\n"
         end
 
-        if has_fan_art == 0
+        if has_fan_art == 0 && art_ext != ".gif"
             loader += "const i#{id}_art = require('./profile/#{id}_art#{if art_ext == ".webp" then ".png" else art_ext end}')\n"
+        elsif has_fan_art == 0
+            loader += "const i#{id}_art_png = require('./profile/#{id}_ava.png')\n"
+            loader += "const i#{id}_art_json = require('./profile/#{id}_ava.json')\n"
         end
 
         id += 1

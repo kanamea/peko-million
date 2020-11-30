@@ -96,11 +96,18 @@ class MainMessagePage {
         ]
 
         this.#msgs.forEach((el) => {
-            if (el.has_avatar === 0) {
+            if (el.has_avatar === 0 && el.has_gif_avatar) {
+                console.log(el.avatar.substring(0, el.avatar.length - ".gif".length) + ".json")
+                img_src.push(el.avatar.substring(0, el.avatar.length - ".gif".length) + ".png")
+                img_src.push(el.avatar.substring(0, el.avatar.length - ".gif".length) + ".json")
+            } else if (el.has_avatar === 0) {
                 img_src.push(el.avatar)
             }
 
-            if (el.has_fan_art === 0) {
+            if (el.has_fan_art === 0 && el.has_gif_fan_art) {
+                img_src.push(el.fan_art.substring(0, el.fan_art.length - ".gif".length) + ".png")
+                img_src.push(el.fan_art.substring(0, el.fan_art.length - ".gif".length) + ".json")
+            } else if (el.has_fan_art === 0) {
                 img_src.push(el.fan_art)
             }
         })
@@ -1066,8 +1073,24 @@ class MainMessagePage {
 
         let img = info.has_avatar === 0 ? info.avatar : `./profile/default_ava.png`
 
-        let avatar_texture = PIXI.Texture.from(img)
-        let avatar = new PIXI.Sprite(avatar_texture)
+        let avatar_texture, avatar
+        if (info.has_gif_avatar) {
+            avatar_texture = []
+            console.log(info.avatar)
+            let filename = info.avatar.split("/")[info.avatar.split("/").length - 1]
+            for (let i = 0; i < info.ava_frame_count; i++) {
+                img = filename.substring(0, filename.length - ".gif".length) + `${i}.png`
+                avatar_texture.push(PIXI.Texture.from(img))
+            }
+
+            avatar = new PIXI.AnimatedSprite(avatar_texture)
+            avatar.animationSpeed = 1
+            avatar.play()
+        } else {
+            avatar_texture = PIXI.Texture.from(img)
+            avatar = new PIXI.Sprite(avatar_texture)
+        }
+
         let avatar_mask = new PIXI.Graphics()
 
         avatar_mask.beginFill(0xFFFFFF)
@@ -1252,8 +1275,23 @@ class MainMessagePage {
         // art
         img = info.has_fan_art === 0 ? info.fan_art : "./profile/default_ava.png"
 
-        let art_texture = PIXI.Texture.from(img)
-        let art = new PIXI.Sprite(art_texture)
+        let art_texture, art
+        if (info.has_gif_fan_art) {
+            art_texture = []
+            let filename = info.fan_art.split("/")[info.fan_art.split("/").length - 1]
+            for (let i = 0; i < info.art_frame_count; i++) {
+                img = filename.substring(0, filename.length - ".gif".length) + `${i}.png`
+                art_texture.push(PIXI.Texture.from(img))
+            }
+
+            art = new PIXI.AnimatedSprite(art_texture)
+            art.animationSpeed = .16
+            art.play()
+        } else {
+            art_texture = PIXI.Texture.from(img)
+            art = new PIXI.Sprite(art_texture)
+        }
+
         let art_bg = new PIXI.Graphics()
 
         let art_margin = height / 16

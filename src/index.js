@@ -10,9 +10,6 @@ PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 let ratio = window.innerWidth / window.innerHeight
 let width, height
 
-console.log(window.innerWidth)
-console.log(window.innerHeight)
-
 if (ratio < 16.0/9.0) {
     width = window.innerWidth
     height = width * (9.0/16.0)
@@ -23,9 +20,6 @@ if (ratio < 16.0/9.0) {
     width = window.innerWidth
     height = window.innerHeight
 }
-
-console.log(width)
-console.log(height)
 
 app.renderer.view.style.position = "absolute";
 app.renderer.view.style.display = "block";
