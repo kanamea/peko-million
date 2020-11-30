@@ -4,7 +4,7 @@ import MainMessagePage from './js/message_main.js'
 // The application will create a renderer using WebGL, if possible,
 // with a fallback to a canvas render. It will also setup the ticker
 // and the root stage PIXI.Container
-screen.orientation.lock("landscape-primary")
+screen.orientation.lock("portrait-primary")
 const app = new PIXI.Application();
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
@@ -37,39 +37,3 @@ app.stage.sortableChildren = true
 document.body.appendChild(app.view);
 
 MainMessagePage.run(app);
-
-/* test function, omit for now
-app.loader.add('bunny', './img/pekora.json').load((loader, resources) => {
-    // This creates a texture from a 'bunny.png' image
-    const frames = [];
-    
-    for (let i = 0; i < 10; i++){
-        const texture = PIXI.Texture.from(`pekora${i}.png`);
-        frames.push(texture);
-    }
-
-    const bunny = new PIXI.AnimatedSprite(frames);
-
-    // Setup the position of the bunny
-    bunny.x = app.renderer.width / 2;
-    bunny.y = app.renderer.height / 2;
-
-    // Rotate around the center
-    bunny.anchor.x = 0.5;
-    bunny.anchor.y = 0.5;
-    bunny.animationSpeed = .2;
-    bunny.play();
-
-    // Add the bunny to the scene we are building
-    app.stage.addChild(bunny);
-
-    // Listen for frame updates
-    app.ticker.add(() => {
-        bunny.x = app.renderer.width / 2;
-        bunny.y = app.renderer.height / 2;
-
-         // each frame we spin the bunny around a bit
-        bunny.rotation -= 0.01;
-    });
-});
-*/

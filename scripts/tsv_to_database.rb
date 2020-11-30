@@ -11,7 +11,9 @@ def tsv_to_database(tsv_file)
 
     manual_anon_id = []
 
-    Dir.mkdir 'img'
+    if !Dir.exist? 'img'
+        Dir.mkdir 'img'
+    end
 
     CSV.foreach(tsv_file, headers: :first_row, internal_encoding: 'UTF-8') do |line|
         timestamp, profile_pic, username, region, fan_art, twitter, message = line.map { |x| x[1]}
@@ -103,7 +105,7 @@ def tsv_to_database(tsv_file)
         database += "\tname: \"#{if username == nil then "Anonymous Nousagi ##{anon_cnt.to_s.rjust(3, "0")}" else username.gsub("\"", "\\\"").gsub("\n", "\\n") end}\",\n"
         database += "\thas_avatar: #{has_avatar},\n"
         database += "\tmessage: \"#{message.gsub("\"", "\\\"").gsub("\n", "\\n").gsub("\r", "")}\",\n"
-        database += "\talt_message: #{if alt_message == nil then "null" else "\"#{message.gsub("\"", "\\\"").gsub("\n", "\\n").gsub("\r", "")}\"" end},\n"
+        database += "\talt_message: #{if alt_message == nil then "null" else "\"#{alt_message.gsub("\"", "\\\"").gsub("\n", "\\n").gsub("\r", "")}\"" end},\n"
         database += "\thas_twitter: #{has_twitter},\n"
         database += "\ttwitter: \"#{twitter_link}\",\n"
         database += "\thas_fan_art: #{has_fan_art},\n"

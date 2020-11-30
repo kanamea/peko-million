@@ -11,8 +11,13 @@ gulp.task('dwebp', () => {
 });
 
 gulp.task('squash', () => {
-  return gulp.src('./public/*.{png,jpeg,tiff,svg,gif}')
+  return gulp.src('./public/*.{png,jpeg,tiff,svg}')
     .pipe(imageresize({width: 1000}))
     .pipe(imagemin())
+    .pipe(gulp.dest("./src/profile"))
+});
+
+gulp.task('move', () => {
+  return gulp.src('./public/*.gif')
     .pipe(gulp.dest("./src/profile"))
 });

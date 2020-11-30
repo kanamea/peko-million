@@ -45,7 +45,7 @@
     "clean": "rimraf ./src/profile && rimraf minified",
     "buildDev": "rimraf dist && webpack --mode development --config webpack.server.config.js && webpack --mode development --config webpack.dev.config.js",
     "buildProd": "rimraf dist && webpack --mode production --config webpack.server.config.js && webpack --mode production --config webpack.prod.config.js",
-    "gulp": "gulp dwebp squash",
+    "gulp": "gulp dwebp squash move",
     "startDev": "webpack serve --mode development --config webpack.dev.config.js",
     "startProd": "node ./dist/server.js",
     "git": "git add . && git commit -m \"update server\" && git push origin main",

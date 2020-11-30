@@ -17,7 +17,7 @@ class MainMessagePage {
         moving_pekomon: "moving_pekomon"
     })
 
-    static #max_cooldown = 100
+    static #max_cooldown = 20
 
     static #msgs = []
     static #sprites = new Map()
@@ -43,6 +43,10 @@ class MainMessagePage {
     static #type = "orig"
     static #app
     static #scroll
+    static #animations
+    static #bgm = new Audio('./bgm/pekorap.mp3')
+    static #ui_texts
+    static #lang
 
     // initialize page
     static async #initialize(app) {
@@ -55,6 +59,11 @@ class MainMessagePage {
         this.#height = app.renderer.height
 
         this.#app = app
+        this.#animations = []
+        this.#ui_texts = new Map()
+        this.#ui_texts.set("english", [])
+        this.#ui_texts.set("japanese", [])
+        this.#lang = "japanese"
 
         let img_src = [
             './profile/Africa.png',
@@ -78,7 +87,11 @@ class MainMessagePage {
         let img_basic = [
             './img/pekora.json',
             './img/pekomon.json',
-            './img/pekomon_hl.json'
+            './img/pekomon_hl.json',
+            './img/sound_on.png',
+            './img/sound_off.png',
+            './img/japanese.png',
+            './img/english.png',
         ]
 
         this.#msgs.forEach((el) => {
@@ -121,7 +134,7 @@ class MainMessagePage {
                 loading_bar.drawRect(0, 0, this.#width + 5, 10 * this.#width / this.base_width)
                 loading_bar.endFill()
 
-                loading_bar.pivot.x = loading_text.width / 2
+                loading_bar.pivot.x = this.#width / 2
                 loading_bar.pivot.y = 0
 
                 loading_bar.x = loading_text.x
@@ -161,6 +174,7 @@ class MainMessagePage {
                 // create button boxes
                 let org = this.#create_buttons(this.#width / 4, this.#width / 36, this.#width / 16 * 7 - this.#width / 30, this.#height / 3 * 2,
                     ["Organize"],
+                    ["整列"],
                     [
                         () => {
                             this.#sprites.get("organize").visible = false
@@ -172,11 +186,13 @@ class MainMessagePage {
 
                 let sort = this.#create_buttons(this.#width / 4, this.#width / 36, this.#width / 16 * 7 - this.#width / 30, this.#height / 3 * 2,
                     ["Sort by:", "Name", "Region", "Fan Art", "Unread", "Random"],
+                    ["並び順", "名前", "地域", "ファンアート", "未読", "ランダム"],
                     [
-                        () => {},
+                        false,
                         () => {
                             this.sort_by(1)
 
+                            this.#sprites.get("back_button").visible = true
                             this.#animation_state = this.AnimationStates.moving_pekomon
                             this.#state = this.States.pekomon_select
                             this.#sprites.get("sort").visible = false
@@ -187,6 +203,7 @@ class MainMessagePage {
                         () => {
                             this.sort_by(2)
 
+                            this.#sprites.get("back_button").visible = true
                             this.#animation_state = this.AnimationStates.moving_pekomon
                             this.#state = this.States.pekomon_select
                             this.#sprites.get("sort").visible = false
@@ -197,6 +214,7 @@ class MainMessagePage {
                         () => {
                             this.sort_by(3)
 
+                            this.#sprites.get("back_button").visible = true
                             this.#animation_state = this.AnimationStates.moving_pekomon
                             this.#state = this.States.pekomon_select
                             this.#sprites.get("sort").visible = false
@@ -207,6 +225,7 @@ class MainMessagePage {
                         () => {
                             this.sort_by(4)
 
+                            this.#sprites.get("back_button").visible = true
                             this.#animation_state = this.AnimationStates.moving_pekomon
                             this.#state = this.States.pekomon_select
                             this.#sprites.get("sort").visible = false
@@ -217,6 +236,7 @@ class MainMessagePage {
                         () => {
                             this.sort_by(5)
 
+                            this.#sprites.get("back_button").visible = true
                             this.#animation_state = this.AnimationStates.moving_pekomon
                             this.#state = this.States.pekomon_select
                             this.#sprites.get("sort").visible = false
@@ -234,6 +254,8 @@ class MainMessagePage {
 
                 // create pekomon sprite animation
                 this.#draw_pekomon(app)
+
+                this.#draw_icons()
 
                 // add them to stage
                 this.#sprites.forEach((element) => {
@@ -271,12 +293,14 @@ class MainMessagePage {
                     if (this.#clicked) {
                         if (event.keyCode === 37) {
                             this.#msg_index = (((this.#msg_index + 1) % this.#pekomons.length) + this.#pekomons.length) % this.#pekomons.length
+                            this.#animation_state = this.AnimationStates.moving_pekomon
                             this.#pekomons[this.#msg_index].sprite.pointertap()
                             return
                         }
 
                         if (event.keyCode === 39) {
                             this.#msg_index = (((this.#msg_index - 1) % this.#pekomons.length) + this.#pekomons.length) % this.#pekomons.length
+                            this.#animation_state = this.AnimationStates.moving_pekomon
                             this.#pekomons[this.#msg_index].sprite.pointertap()
                             return
                         }
@@ -296,7 +320,7 @@ class MainMessagePage {
                 }
 
                 // frame event
-                app.ticker.add(async () => {
+                let main_loop = () => {
                     // move rabbit icon
                     this.#sprites.get("bunnies").children.forEach((el) => {
                         let amt_x = 6
@@ -362,11 +386,29 @@ class MainMessagePage {
                     if (this.#animation_state === this.AnimationStates.moving_pekomon) {
                         let count = 0
 
+                        let pek_dest_x;
+                        if (this.#msg_index !== null && this.#msg_index !== undefined) {
+                            pek_dest_x = this.#width / 8 * 4 + (this.#msg_index + 2) * 200.0;
+                        } else {
+                            pek_dest_x = this.#width / 8 * 7
+                        }
+
+                        let velocity = 100
+                        if (Math.abs(this.#sprites.get("pekora").x - pek_dest_x) >= velocity) {
+                            if (this.#sprites.get("pekora").x > pek_dest_x) {
+                                this.#sprites.get("pekora").x -= velocity
+                            } else if (this.#sprites.get("pekora").x < pek_dest_x) {
+                                this.#sprites.get("pekora").x += velocity
+                            }
+                        } else {
+                            this.#sprites.get("pekora").x = pek_dest_x
+                            count += 1
+                        }
+
                         this.#pekomons.forEach((el, i) => {
                             let dest_x = this.#sprites.get("pekora").x - (i + 1) * 200.0 - 200;
                             let dest_y = this.#sprites.get("pekora").y
                             let angle = Math.tan(Math.abs(dest_y - el.sprite.y) / Math.abs(dest_x - el.sprite.x))
-                            let velocity = 100
 
                             if (Math.abs(el.sprite.x - dest_x) >= Math.cos(angle) * velocity) {
                                 if (el.sprite.x > dest_x) {
@@ -401,7 +443,7 @@ class MainMessagePage {
                                 el.sprite_name.y = el.sprite.y
                             }
 
-                            if (i === this.#msg_index) {
+                            if (i === this.#msg_index && this.#sprites.get("detailed_message") !== null && this.#sprites.get("detailed_message") !== undefined) {
                                 this.#sprites.get("detailed_message").x = el.sprite.x
                             }
 
@@ -410,7 +452,7 @@ class MainMessagePage {
                             }
                         })
 
-                        if (count == this.#pekomons.length) {
+                        if (count == this.#pekomons.length + 1) {
                             this.#animation_state = this.AnimationStates.none
                         }
                     }
@@ -420,6 +462,14 @@ class MainMessagePage {
                     } else {
                         this.#counter = 0
                     }
+                }
+
+                this.#animations.push(main_loop)
+
+                app.ticker.add(async () => {
+                    this.#animations.forEach((animation) => {
+                        animation()
+                    })
                 })
             })
             resolve()
@@ -625,8 +675,11 @@ class MainMessagePage {
                 fill: 0xFFFFFF
             })
 
+            let name = MainMessagePage.wrap(element.name, 20)
+            name = MainMessagePage.add_dash(name, 20)
+
             const pekomon_name_plate = new PIXI.Container()
-            const pekomon_name_text = new PIXI.Text(MainMessagePage.wrap(element.name, 20), text_style)
+            const pekomon_name_text = new PIXI.Text(name, text_style)
 
             let height = pekomon_name_text.height * 1.5
             let width = pekomon_name_text.width + height
@@ -703,7 +756,7 @@ class MainMessagePage {
                             this.#sprites.get("detailed_message").destroy()
                         }
 
-                        this.#sprites.get("pekora").x = this.#width / 8 * 4 + (index + 2) * 200.0;
+                        //this.#sprites.get("pekora").x = this.#width / 8 * 4 + (index + 2) * 200.0;
                         this.#animation_state = this.AnimationStates.moving_pekomon
 
                         this.#clicked = true
@@ -744,6 +797,10 @@ class MainMessagePage {
 
         let info_msg = MainMessagePage.wrap(info.message.substring(0, 400) + "\n        ...", 20)
         let info_name = MainMessagePage.wrap(info.name, 15)
+
+        info_msg = MainMessagePage.add_dash(info_msg, 20)
+        info_name = MainMessagePage.add_dash(info_name, 15)
+
         let width = 200 * (this.#width / this.base_width)
 
         // draw text
@@ -815,8 +872,8 @@ class MainMessagePage {
         return cont
     }
 
-    static #create_buttons(width, button_height, x, y, buttons, click_event) {
-        const height = button_height * buttons.length
+    static #create_buttons(width, button_height, x, y, buttons_en, button_jp, click_event) {
+        const height = button_height * buttons_en.length
 
         // draw message box
         let button_bg = new PIXI.Graphics()
@@ -840,7 +897,7 @@ class MainMessagePage {
 
         let button_sprites = []
 
-        buttons.forEach((el, i) => {
+        buttons_en.forEach((el, i) => {
             let text_style1 = new PIXI.TextStyle({
                 fontFamily: "Courier",
                 fontSize: 30 * this.#width / this.base_width,
@@ -853,8 +910,10 @@ class MainMessagePage {
             })
 
             let bg_hl = new PIXI.Graphics()
-            let text = new PIXI.Text(el, text_style1)
-            let text_hl = new PIXI.Text(el, text_style2)
+            let text_en = new PIXI.Text(el, text_style1)
+            let text_jp = new PIXI.Text(button_jp[i], text_style1)
+            let text_en_hl = new PIXI.Text(el, text_style2)
+            let text_jp_hl = new PIXI.Text(button_jp[i], text_style2)
 
             bg_hl.beginFill(0xCCCCCC, 1)
             bg_hl.drawRect(0, 0, width, button_height)
@@ -863,35 +922,56 @@ class MainMessagePage {
             bg_hl.pivot.x = width / 2
             bg_hl.pivot.y = button_height / 2
 
-            text.pivot.x = text.width / 2
-            text.pivot.y = text.height / 2
+            text_en.pivot.x = text_en.width / 2
+            text_en.pivot.y = text_en.height / 2
 
-            text_hl.pivot.x = text.width / 2
-            text_hl.pivot.y = text.height / 2
+            text_en_hl.pivot.x = text_en.width / 2
+            text_en_hl.pivot.y = text_en.height / 2
+
+            text_jp.pivot.x = text_jp.width / 2
+            text_jp.pivot.y = text_jp.height / 2
+
+            text_jp_hl.pivot.x = text_jp.width / 2
+            text_jp_hl.pivot.y = text_jp.height / 2
 
             bg_hl.visible = false
-            text_hl.visible = false
+            text_en_hl.visible = false
+            text_en.visible = false
+            text_jp_hl.visible = false
 
             let individual_button = new PIXI.Container()
             individual_button.addChild(bg_hl)
-            individual_button.addChild(text)
-            individual_button.addChild(text_hl)
+            individual_button.addChild(text_en)
+            individual_button.addChild(text_en_hl)
+            individual_button.addChild(text_jp)
+            individual_button.addChild(text_jp_hl)
 
-            individual_button.interactive = true
+            individual_button.interactive = click_event[i] != false
             individual_button.pointerover = () => {
                 bg_hl.visible = true
-                text_hl.visible = true
+
+                if (this.#lang === "japanese") {
+                    text_jp_hl.visible = true
+                } else {
+                    text_en_hl.visible = true
+                }
             }
             individual_button.pointerout = () => {
                 bg_hl.visible = false
-                text_hl.visible = false
+                if (this.#lang === "japanese") {
+                    text_jp_hl.visible = false
+                } else {
+                    text_en_hl.visible = false
+                }
             }
             individual_button.pointertap = click_event[i]
 
             individual_button.x = 0
-            individual_button.y = button_height * (i-buttons.length +1) - button_height / 2 - 10
+            individual_button.y = button_height * (i-buttons_en.length +1) - button_height / 2 - 10
 
             button_sprites.push(individual_button)
+            this.#ui_texts.get("japanese").push(text_jp)
+            this.#ui_texts.get("english").push(text_en)
         })
 
         let button = new PIXI.Container()
@@ -912,6 +992,11 @@ class MainMessagePage {
     static #draw_detailed_message = (info, width, height, x, y) => {
         let info_msg = MainMessagePage.wrap(info.message, 33)
         let info_msg_alt = info.alt_message !== null ? MainMessagePage.wrap(info.alt_message, 33) : ""
+
+        let sc = this.#width / this.base_width
+
+        info_msg = MainMessagePage.add_dash(info_msg, 33)
+        info_msg_alt = MainMessagePage.add_dash(info_msg_alt, 33)
 
         let message = new PIXI.Graphics();
 
@@ -1114,11 +1199,11 @@ class MainMessagePage {
                     content = message_content_alt
                 }
 
-                if (content.y < top_y + content_height * .5 - offset) {
+                if (content.y < top_y + content_height * .1 - offset) {
                     message_down.visible = true
                     content.y += offset
                 } else {
-                    content.y = top_y + content_height * .5
+                    content.y = top_y + content_height * .1
                     message_up.visible = false
                 }
             }
@@ -1133,11 +1218,11 @@ class MainMessagePage {
                     content = message_content_alt
                 }
 
-                if (content.y > top_y - content.height + content_height * .5 + offset) {
+                if (content.y > top_y - content.height + content_height * .9 + offset) {
                     message_up.visible = true
                     content.y -= 20
                 } else {
-                    content.y = top_y - content.height + content_height * .5
+                    content.y = top_y - content.height + content_height * .9
                     message_down.visible = false
                 }
             }
@@ -1393,6 +1478,99 @@ class MainMessagePage {
         map_bg.y = map.y + 5
         icon_container.y = map_bg.y + map.height + intervals
 
+        let message_left = new PIXI.Graphics()
+        let message_right = new PIXI.Graphics()
+
+        let button_size = 50 * this.#width / this.base_width
+        let side_button_dist = 20 * this.#width / this.base_width
+
+        message_left.beginFill(0x000000, .5)
+        message_left.drawRoundedRect(5, 5, button_size, button_size, button_size * .25)
+        message_left.endFill()
+
+        message_left.beginFill(0xFFA657)
+        message_left.drawRoundedRect(0, 0, button_size, button_size, button_size * .25)
+        message_left.endFill()
+
+        message_left.beginFill(0xFFFFFF)
+        message_left.drawPolygon([
+            button_size / 2 + 5 * sc - arr_width / 2, button_size / 2 - 10 * sc,
+            button_size / 2 - 5 * sc - arr_width / 2, button_size / 2,
+            button_size / 2 + 5 * sc - arr_width / 2, button_size / 2 + 10 * sc,
+            button_size / 2 + 5 * sc + arr_width / 2, button_size / 2 + 10 * sc,
+            button_size / 2 - 5 * sc + arr_width / 2, button_size / 2,
+            button_size / 2 + 5 * sc + arr_width / 2, button_size / 2 - 10 * sc,
+        ])
+        message_left.endFill()
+
+        message_right.beginFill(0x000000, .5)
+        message_right.drawRoundedRect(5, 5, button_size, button_size, button_size * .25)
+        message_right.endFill()
+        
+        message_right.beginFill(0xFFA657)
+        message_right.drawRoundedRect(0, 0, button_size, button_size, button_size * .25)
+        message_right.endFill()
+
+        message_right.beginFill(0xFFFFFF)
+        message_right.drawPolygon([
+            button_size / 2 - 5 * sc - arr_width / 2, button_size / 2 - 10 * sc,
+            button_size / 2 + 5 * sc - arr_width / 2, button_size / 2,
+            button_size / 2 - 5 * sc - arr_width / 2, button_size / 2 + 10 * sc,
+            button_size / 2 - 5 * sc + arr_width / 2, button_size / 2 + 10 * sc,
+            button_size / 2 + 5 * sc + arr_width / 2, button_size / 2,
+            button_size / 2 - 5 * sc + arr_width / 2, button_size / 2 - 10 * sc,
+        ])
+        message_right.endFill()
+
+        message_left.pivot.x = button_size
+        message_left.pivot.y = button_size / 2
+
+        message_right.pivot.y = button_size / 2
+
+        message_left.x = -side_button_dist
+        message_left.y = height / 2
+
+        message_right.x = width + side_button_dist
+        message_right.y = height / 2
+
+        message_left.interactive = true
+        message_left.pointertap = () => {
+            this.#msg_index = (((this.#msg_index + 1) % this.#pekomons.length) + this.#pekomons.length) % this.#pekomons.length
+            this.#pekomons[this.#msg_index].sprite.pointertap()
+        }
+
+        message_right.interactive = true
+        message_right.pointertap = () => {
+            this.#msg_index = (((this.#msg_index - 1) % this.#pekomons.length) + this.#pekomons.length) % this.#pekomons.length
+            this.#pekomons[this.#msg_index].sprite.pointertap()
+        }
+
+        let msg_del = new PIXI.Graphics()
+
+        msg_del.beginFill(0x000000, .5)
+        msg_del.drawCircle(5, 0, 25 * sc)
+        msg_del.endFill()
+
+        msg_del.beginFill(0xFFFFFF)
+        msg_del.drawCircle(0, 0, 25 * sc)
+        msg_del.endFill()
+
+        msg_del.beginFill(0x000000)
+        msg_del.drawRect(-15 * sc, -1.5 * sc, 30 * sc, 3 * sc)
+        msg_del.drawRect(-1.5 * sc, -15 * sc, 3 * sc, 30 * sc)
+        msg_del.endFill()
+
+        msg_del.angle = 45
+
+        msg_del.x = width
+        msg_del.y = 0
+
+        msg_del.interactive = true
+        msg_del.pointertap = () => {
+            this.#sprites.get("detailed_message").destroy()
+            this.#sprites.set("detailed_message", null)
+        }
+
         let container = new PIXI.Container()
 
         container.addChild(message)
@@ -1409,6 +1587,9 @@ class MainMessagePage {
         container.addChild(map_bg)
         container.addChild(map)
         container.addChild(icon_container)
+        container.addChild(msg_del)
+        container.addChild(message_left)
+        container.addChild(message_right)
 
         container.pivot.x = width / 2
         container.pivot.y = height
@@ -1510,6 +1691,261 @@ class MainMessagePage {
         this.#app.stage.addChild(cont)
     }
 
+    static #draw_icons() {
+        let cont = new PIXI.Container()
+        let jp_button = PIXI.Texture.from("./img/japanese.png")
+        let en_button = PIXI.Texture.from("./img/english.png")
+
+        let sound_on = PIXI.Texture.from("./img/sound_on.png")
+        let sound_off = PIXI.Texture.from("./img/sound_off.png")
+
+        let back_button = new PIXI.Graphics()
+        let bgm_button = new PIXI.Container()
+        let lang_button = new PIXI.Container()
+
+        let button_size = 50 * this.#width / this.base_width
+        let arrow_width = 4 * this.#width / this.base_width
+        let sc = this.#width / this.base_width
+
+        back_button.beginFill(0x000000, .5)
+        back_button.drawRoundedRect(5, 5, button_size, button_size, button_size * .25)
+        back_button.endFill()
+
+        back_button.beginFill(0x444444)
+        back_button.drawRoundedRect(0, 0, button_size, button_size, button_size * .25)
+        back_button.endFill()
+
+        back_button.beginFill(0xFFFFFF)
+        back_button.drawPolygon([
+            button_size / 2 + 5 * sc - arrow_width / 2, button_size / 2 - 10 * sc,
+            button_size / 2 - 5 * sc - arrow_width / 2, button_size / 2,
+            button_size / 2 + 5 * sc - arrow_width / 2, button_size / 2 + 10 * sc,
+            button_size / 2 + 5 * sc + arrow_width / 2, button_size / 2 + 10 * sc,
+            button_size / 2 - 5 * sc + arrow_width / 2, button_size / 2,
+            button_size / 2 + 5 * sc + arrow_width / 2, button_size / 2 - 10 * sc,
+        ])
+        back_button.endFill()
+
+        back_button.x = 10 * sc
+        back_button.y = 10 * sc
+
+        back_button.interactive = true
+        back_button.pointertap = () => {
+            // create fade in animation
+            let white_screen = new PIXI.Graphics()
+            let speed = .01
+            let state = 0
+
+            white_screen.beginFill(0x000000)
+            white_screen.drawRect(-5, -5, this.#width + 10, this.#height + 10)
+            white_screen.endFill()
+
+            white_screen.alpha = 0
+            white_screen.zIndex = Number.MAX_SAFE_INTEGER
+
+            this.#app.stage.addChild(white_screen)
+
+            let ind = this.#animations.length
+
+            this.#animations.push(() => {
+                // state 0, fade to white
+                if (state === 0 && white_screen.alpha < 1) {
+                    white_screen.alpha += speed
+                } else if (state === 0) {
+                    white_screen.alpha = 1
+                    state = 1
+                }
+
+                // state 1, stay white for a bit while the march finishes moving to initial location
+                if (state === 1) {
+                    new Promise(async (res) => {
+                        await this.#resume_marching()
+                        back_button.visible = false
+                        state = 2
+                        speed = .01
+                    })
+                }
+
+                // state 2, fade back
+                if (state === 2 && white_screen.alpha > 0) {
+                    white_screen.alpha -= speed
+                } else if (state === 2) {
+                    white_screen.alpha = 0
+                    state = 3
+                }
+
+                // state 3, finished animation, pop the animation out
+                if (state === 3) {
+                    if (white_screen !== null) {
+                        white_screen.destroy()
+                        white_screen = null
+                    }
+                    this.#animations.splice(ind, 1)
+                }
+            })
+        }
+
+        let bgm_bg = new PIXI.Graphics()
+        let bgm_spr = new PIXI.Sprite(sound_off)
+
+        bgm_bg.beginFill(0x000000, .5)
+        bgm_bg.drawRoundedRect(5, 5, button_size, button_size, button_size * .25)
+        bgm_bg.endFill()
+
+        bgm_bg.beginFill(0x444444)
+        bgm_bg.drawRoundedRect(0, 0, button_size, button_size, button_size * .25)
+        bgm_bg.endFill()
+
+        let bgm_scale = (button_size - 5 * sc) / bgm_spr.width
+
+        bgm_spr.scale.x = bgm_scale
+        bgm_spr.scale.y = bgm_scale
+
+        bgm_spr.anchor.x = .5
+        bgm_spr.anchor.y = .5
+
+        bgm_spr.x = button_size / 2
+        bgm_spr.y = button_size / 2
+
+        bgm_button.addChild(bgm_bg)
+        bgm_button.addChild(bgm_spr)
+
+        bgm_button.pivot.x = button_size
+
+        bgm_button.x = this.#width - 10 * sc
+        bgm_button.y = 10 * sc
+
+        bgm_button.interactive = true
+        bgm_button.pointertap = () => {
+            if (bgm_spr.texture === sound_on) {
+                bgm_spr.texture = sound_off
+                this.#bgm.pause()
+            } else {
+                bgm_spr.texture = sound_on
+                this.#bgm.volume = .2
+                this.#bgm.loop = true
+                this.#bgm.play()
+            }
+        }
+
+        let lang_bg = new PIXI.Graphics()
+        let lang_mask = new PIXI.Graphics()
+        let lang_spr = new PIXI.Sprite(jp_button)
+        let lang_outline = new PIXI.Graphics()
+
+        lang_bg.beginFill(0x000000, .5)
+        lang_bg.drawRoundedRect(5, 5, button_size, button_size, button_size * .25)
+        lang_bg.endFill()
+
+        lang_mask.beginFill(0xFFFFFF)
+        lang_mask.drawRoundedRect(0, 0, button_size, button_size, button_size * .25)
+        lang_mask.endFill()
+
+        lang_outline.beginFill(0x000000)
+        lang_outline.drawRoundedRect(0, 0, button_size, button_size, button_size * .25)
+        lang_outline.endFill()
+
+        lang_outline.beginHole()
+        lang_outline.drawRoundedRect(1, 1, button_size - 2, button_size - 2, button_size * .25)
+        lang_outline.endFill()
+
+        let lang_scale = (button_size * sc + button_size / 4) / lang_spr.width
+
+        lang_spr.scale.x = lang_scale
+        lang_spr.scale.y = lang_scale
+
+        lang_spr.anchor.x = .5
+        lang_spr.anchor.y = .5
+
+        lang_spr.x = button_size / 2
+        lang_spr.y = button_size / 2
+
+        lang_spr.mask = lang_mask
+
+        lang_button.addChild(lang_bg)
+        lang_button.addChild(lang_mask)
+        lang_button.addChild(lang_spr)
+        lang_button.addChild(lang_outline)
+
+        lang_button.pivot.x = button_size
+
+        lang_button.x = bgm_button.x - button_size - 10 * sc
+        lang_button.y = 10 * sc
+
+        lang_button.interactive = true
+        lang_button.pointertap = () => {
+            if (lang_spr.texture === en_button) {
+                lang_spr.texture = jp_button
+                this.#ui_texts.get("japanese").forEach((el) => {
+                    el.visible = true
+                })
+                this.#ui_texts.get("english").forEach((el) => {
+                    el.visible = false
+                })
+                this.#lang = "japanese"
+            } else {
+                lang_spr.texture = en_button
+                this.#ui_texts.get("english").forEach((el) => {
+                    el.visible = true
+                })
+                this.#ui_texts.get("japanese").forEach((el) => {
+                    el.visible = false
+                })
+                this.#lang = "english"
+            }
+        }
+
+        back_button.visible = false
+
+        cont.addChild(bgm_button)
+        cont.addChild(lang_button)
+
+        this.#sprites.set("back_button", back_button)
+        this.#sprites.set("icon_container", cont)
+    }
+
+    static async #resume_marching() {
+        // move Pekora to base location
+        const pekora = this.#sprites.get("pekora")
+
+        pekora.x = this.#width / 8 * 7
+        // move Pekomon to base location
+        // define a function for Pekomon's y, which is sine over certain range. Adjust the amplitude over time with cubic easing in function. Apply absolute value to avoid negatives
+        let func_y = (t, max_dev) => {
+            return Math.abs(Math.sin(t * Math.PI * 4) * (max_dev - (max_dev * (t*t))))
+        }
+
+        this.#pekomons.forEach((el) => {
+            el.sprite_name.visible = false
+
+            let pekomon = el.sprite
+            let pekomon_hl = el.sprite_hl
+
+            // get random x
+            pekomon.x = Math.floor(Math.random() * (pekora.x - this.#width / 30)) - this.#width / 30
+
+            // get t, a proportion between max width and current x
+            let t = pekomon.x / (pekora.x - this.#width / 30)
+
+            // calculate the y based on the function
+            let dev = func_y(t, this.#height / 4)
+            pekomon.y = pekora.y - Math.floor(Math.random() * dev)
+
+            pekomon_hl.x = pekomon.x
+            pekomon_hl.y = pekomon.y
+
+            pekomon_hl.alpha = 0
+        })
+
+        this.#state = this.States.main
+        this.#animation_state = this.AnimationStates.none
+        this.#msg_index = null
+        if (this.#sprites.get("detailed_message") !== null && this.#sprites.get("detailed_message") !== undefined) {
+            this.#sprites.get("detailed_message").destroy()
+            this.#sprites.set("detailed_message", null)
+        }
+    }
+
     static wrap(text, width) {
         let new_text = ""
 
@@ -1528,6 +1964,24 @@ class MainMessagePage {
 
             new_text += c
         }
+
+        return new_text
+    }
+
+    static add_dash(text, width) {
+        let new_text = ""
+
+        let arr = text.split("\n")
+
+        for (let i = 0; i < arr.length - 1; i++) {
+            if (arr[i].charAt(arr[i].length - 1) !== " " && arr[i+1].charAt(0) !== " " && arr[i].length == width) {
+                arr[i] += "-"
+            }
+
+            new_text += arr[i] + "\n"
+        }
+
+        new_text += arr[arr.length-1]
 
         return new_text
     }
