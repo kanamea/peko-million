@@ -144,6 +144,8 @@ def tsv_to_database(tsv_file)
         f.write "\n// load all the assets that will be used here\nconst pekomon_hl = require('./img/pekomon_hl.json')\nconst pkmnjson = require('./img/pekomon.json')\nconst pekora = require('./img/pekora.json')\nconst pekomon_hl2 = require('./img/pekomon_hl.png')\nconst pekomon2 = require('./img/pekomon.png')\nconst pekora2 = require('./img/pekora.png')\n"
         f.write "\n// region\nconst africa = require('./profile/Africa.png')\nconst central_america = require('./profile/Central America.png')\nconst central_asia = require('./profile/Central Asia.png')\nconst east_asia = require('./profile/East Asia.png')\nconst europe_north_asia = require('./profile/Europe & North Asia.png')\nconst none = require('./profile/None.png')\nconst north_america = require('./profile/North America.png')\nconst oceania = require('./profile/Oceania.png')\nconst south_america = require('./profile/South America.png')\nconst south_asia = require('./profile/South Asia.png')\nconst south_east_asia = require('./profile/South East Asia.png')\nconst west_asia = require('./profile/West Asia.png')\n"
         f.write "\n// icons\nconst twitter = require('./profile/twitter.png')\nconst translate_grey = require('./profile/translate_grey.png')\nconst translate = require('./profile/translate.png')\nconst default_ava = require('./profile/default_ava.png')"
+        f.write "\n// main icon\nconst japanese = require('./img/japanese.png')\nconst english = require('./img/english.png')\nconst sound_off = require('./img/sound_off.png')\nconst sound_on = require('./img/sound_on.png')"
+        f.write "\n// others\nconst bgm = require('./bgm/pekorap.mp3')\n"
     end
 end
 

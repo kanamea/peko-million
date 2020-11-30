@@ -111,3 +111,10 @@ const twitter = require('./profile/twitter.png')
 const translate_grey = require('./profile/translate_grey.png')
 const translate = require('./profile/translate.png')
 const default_ava = require('./profile/default_ava.png')
+
+// main icon
+const japanese = require('./img/japanese.png')
+const english = require('./img/english.png')
+const sound_off = require('./img/sound_off.png')
+const sound_on = require('./img/sound_on.png')
+const bgm = require('./bgm/pekorap.mp3')
