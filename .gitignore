@@ -1,12 +1,29 @@
 node_modules/**
 public/*
+public_2/*
 scripts/img/*
 scripts/loader.js
 scripts/database.js
 src/profile/*
 
 node_modules/
-public/
+!public/Africa.png
+!public/Central America.png
+!public/Central Asia.png
+!public/default_ava.png
+!public/East Asia.png
+!public/Europe & North Asia.png
+!public/None.png
+!public/North America.png
+!public/Oceania.png
+!public/South America.png
+!public/South Asia.png
+!public/South East Asia.png
+!public/translate_grey.png
+!public/translate.png
+!public/twitter.png
+!public/West Asia.png
+public_2
 scripts/img/
 src/profile/
 gif_temp/**/*

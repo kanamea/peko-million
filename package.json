@@ -46,7 +46,7 @@
   },
   "scripts": {
     "clean": "rimraf ./src/profile",
-    "cleanGulp": "rimraf minified && rimraf gif_temp",
+    "cleanGulp": "rimraf minified && rimraf gif_temp/**/* rimraf gif_temp",
     "cleanBuild": "rimraf ./dist/loader.js.map && rimraf ./dist/main.js.map",
     "buildDev": "rimraf dist && webpack --mode development --config webpack.server.config.js && webpack --mode development --config webpack.dev.config.js",
     "buildProd": "rimraf dist && webpack --mode production --config webpack.server.config.js && webpack --mode production --config webpack.prod.config.js",
