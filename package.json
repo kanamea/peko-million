@@ -55,7 +55,7 @@
     "startDev": "webpack serve --mode development --config webpack.dev.config.js",
     "startProd": "node ./dist/server.js",
     "git": "git add . && git commit -m \"update server\" && git push origin main",
-    "update": "npm-run-all clean gulp1 gulp2 buildProd cleanBuild git",
+    "upd": "npm-run-all clean gulp1 gulp2 cleanGulp buildProd cleanBuild git",
     "dev": "npm-run-all clean gulp1 gulp2 cleanGulp buildDev cleanBuild startDev",
     "prod": "npm-run-all clean gulp1 gulp2 cleanGulp buildProd cleanBuild startProd",
     "start": "node ./dist/server.js"

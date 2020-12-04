@@ -22,6 +22,7 @@ app.use((req, res, next) => {
     // if "https"
     } else {
         var split = req.headers.host.split(".")
+        console.log(split)
         
         // format: pekora-march.com
         if (split.length === 2) {
