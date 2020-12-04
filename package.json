@@ -45,7 +45,9 @@
     "webpack-node-externals": "^2.5.2"
   },
   "scripts": {
-    "clean": "rimraf ./src/profile && rimraf minified",
+    "clean": "rimraf ./src/profile",
+    "cleanGulp": "rimraf minified && rimraf gif_temp",
+    "cleanBuild": "rimraf ./dist/loader.js.map && rimraf ./dist/main.js.map",
     "buildDev": "rimraf dist && webpack --mode development --config webpack.server.config.js && webpack --mode development --config webpack.dev.config.js",
     "buildProd": "rimraf dist && webpack --mode production --config webpack.server.config.js && webpack --mode production --config webpack.prod.config.js",
     "gulp1": "gulp dwebp squash gifexplode",
@@ -53,9 +55,9 @@
     "startDev": "webpack serve --mode development --config webpack.dev.config.js",
     "startProd": "node ./dist/server.js",
     "git": "git add . && git commit -m \"update server\" && git push origin main",
-    "update": "npm-run-all clean gulp1 gulp2 buildProd git",
-    "dev": "npm-run-all clean gulp1 gulp2 buildDev startDev",
-    "prod": "npm-run-all clean gulp1 gulp2 buildProd startProd",
+    "update": "npm-run-all clean gulp1 gulp2 buildProd cleanBuild git",
+    "dev": "npm-run-all clean gulp1 gulp2 cleanGulp buildDev cleanBuild startDev",
+    "prod": "npm-run-all clean gulp1 gulp2 cleanGulp buildProd cleanBuild startProd",
     "start": "node ./dist/server.js"
   },
   "keywords": [],

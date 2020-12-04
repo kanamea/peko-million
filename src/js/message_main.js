@@ -48,6 +48,7 @@ class MainMessagePage {
     static #ui_texts
     static #lang
     static #msg_x_index
+    static #scale
 
     // initialize page
     static async #initialize(app) {
@@ -58,6 +59,8 @@ class MainMessagePage {
 
         this.#width = app.renderer.width
         this.#height = app.renderer.height
+
+        this.#scale = this.#width / this.base_width
 
         this.#app = app
         this.#animations = []
@@ -119,7 +122,7 @@ class MainMessagePage {
 
                 let loading_style = new PIXI.TextStyle({
                     fontFamily: "Courier",
-                    fontSize: 50 * (this.#width / this.base_width),
+                    fontSize: 50 * (this.#scale),
                     fill: 0x000000
                 })
 
@@ -135,18 +138,18 @@ class MainMessagePage {
                 loading_text.y = this.#height / 2
 
                 loading.beginFill(0xFFFFFF, .5)
-                loading.drawRect(-5, -5, this.#width + 10, this.#height + 10)
+                loading.drawRect(-(5 * this.#scale), -(5 * this.#scale), this.#width + (10 * this.#scale), this.#height + (10 * this.#scale))
                 loading.endFill()
 
                 loading_bar.beginFill(0xFFA657)
-                loading_bar.drawRect(0, 0, this.#width + 5, 10 * this.#width / this.base_width)
+                loading_bar.drawRect(0, 0, this.#width + (5 * this.#scale), 10 * this.#scale)
                 loading_bar.endFill()
 
                 loading_bar.pivot.x = this.#width / 2
                 loading_bar.pivot.y = 0
 
                 loading_bar.x = loading_text.x
-                loading_bar.y = loading_text.y + loading_text.height / 2 + 5 * this.#width / this.base_width
+                loading_bar.y = loading_text.y + loading_text.height / 2 + 5 * this.#scale
 
                 loading_bar.scale.x = 0
 
@@ -342,13 +345,13 @@ class MainMessagePage {
                         if (el.y <= -y_dist) {
                             el.y = this.#height + y_dist
                         } else {
-                            el.y -= 1
+                            el.y -= (1 * this.#scale)
                         }
 
                         if (el.x <= -x_dist) {
                             el.x = this.#width + x_dist
                         } else {
-                            el.x -= 1.5
+                            el.x -= (1.5 * this.#scale)
                         }
                     })
 
@@ -398,12 +401,12 @@ class MainMessagePage {
 
                         let pek_dest_x;
                         if (this.#msg_index !== null && this.#msg_index !== undefined) {
-                            pek_dest_x = this.#width / 8 * 4 + (this.#msg_index + 2) * 200.0;
+                            pek_dest_x = this.#width / 8 * 4 + (this.#msg_index + 2) * (300.0 * this.#scale);
                         } else {
                             pek_dest_x = this.#sprites.get("pekora").x
                         }
 
-                        let velocity = 100
+                        let velocity = (100 * this.#scale)
                         if (Math.abs(this.#sprites.get("pekora").x - pek_dest_x) >= velocity) {
                             if (this.#sprites.get("pekora").x > pek_dest_x) {
                                 this.#sprites.get("pekora").x -= velocity
@@ -416,7 +419,7 @@ class MainMessagePage {
                         }
 
                         this.#pekomons.forEach((el, i) => {
-                            let dest_x = this.#sprites.get("pekora").x - (i + 1) * 200.0 - 200;
+                            let dest_x = this.#sprites.get("pekora").x - (i + 1) * (300.0 * this.#scale) - (300 * this.#scale);
                             let dest_y = this.#sprites.get("pekora").y
                             let angle = Math.tan(Math.abs(dest_y - el.sprite.y) / Math.abs(dest_x - el.sprite.x))
 
@@ -508,7 +511,7 @@ class MainMessagePage {
 
             let face = new PIXI.Graphics()
 
-            let radius_face = 50
+            let radius_face = (50 * this.#scale)
             let radius_long_ear = radius_face
             let radius_short_ear = radius_face / 2.5
             let arc_angle = Math.PI / 12
@@ -542,8 +545,8 @@ class MainMessagePage {
 
             bunny.x = x_i * x_dist + (y_i % 2 == 0 ? x_shifter : 0)
             bunny.y = y_i * y_dist
-            bunny.scale.x = this.#height / this.base_height
-            bunny.scale.y = this.#height / this.base_height
+            bunny.scale.x = this.#scale
+            bunny.scale.y = this.#scale
 
             bunnies.addChild(bunny)
         }
@@ -555,21 +558,21 @@ class MainMessagePage {
         let field = new PIXI.Graphics()
 
         field.beginFill(0x4cb3cf)
-        field.drawRect(0, field_height * this.#height / this.base_height, this.#width, edge_height * this.#height / this.base_height)
+        field.drawRect(0, field_height * this.#scale, this.#width, edge_height * this.#scale)
         field.endFill()
         field.beginFill(0x56dbff)
-        field.drawRect(0, 0, this.#width, field_height * this.#height / this.base_height)
+        field.drawRect(0, 0, this.#width, field_height * this.#scale)
         field.endFill()
         field.beginFill(0xFFFFFF, .3)
         field.drawPolygon([
             0, 0,
-            field_height * this.#height / this.base_height + this.#width / 6, 0,
-            this.#width / 6, field_height * this.#height / this.base_height,
-            0, field_height * this.#height / this.base_height
+            field_height * this.#scale + this.#width / 6, 0,
+            this.#width / 6, field_height * this.#scale,
+            0, field_height * this.#scale
         ])
         field.endFill()
 
-        field.y = this.#height - edge_height * this.#height / this.base_height - field_height * this.#height / this.base_height
+        field.y = this.#height - edge_height * this.#scale - field_height * this.#scale
 
         this.#sprites.set("field", field)
     }
@@ -579,6 +582,7 @@ class MainMessagePage {
 
         for (let i = 0; i < 10; i++){
             const texture = PIXI.Texture.from(`pekora${i}.png`)
+            texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST
             frames_pekora.push(texture)
         }
 
@@ -632,6 +636,8 @@ class MainMessagePage {
         for (let i = 0; i < 10; i++) {
             const texture = PIXI.Texture.from(`pekomon${i}.png`)
             const texture2 = PIXI.Texture.from(`pekomon_hl${i}.png`)
+            texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST
+            texture2.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST
             frames_pekomon.push(texture)
             frames_pekomon_hl.push(texture2)
         }
@@ -681,7 +687,7 @@ class MainMessagePage {
 
             let text_style = new PIXI.TextStyle({
                 fontFamily: "Courier",
-                fontSize: 15 * (this.#width / this.base_width),
+                fontSize: 15 * (this.#scale),
                 fill: 0xFFFFFF
             })
 
@@ -771,7 +777,7 @@ class MainMessagePage {
 
                         this.#clicked = true
 
-                        let spr = this.#draw_detailed_message(element, 900 * (this.#width / this.base_width), 600 * (this.#width / this.base_width), pekomon.x, this.#height / 32 * 25)
+                        let spr = this.#draw_detailed_message(element, 900 * (this.#scale), 600 * (this.#scale), pekomon.x, this.#height / 32 * 25)
                         this.#pekomons[index].detail_message = spr
 
                         pekomon_hl.alpha = 1
@@ -812,12 +818,12 @@ class MainMessagePage {
         info_msg = MainMessagePage.add_dash(info_msg, 20)
         info_name = MainMessagePage.add_dash(info_name, 15)
 
-        let width = 200 * (this.#width / this.base_width)
+        let width = 200 * (this.#scale)
 
         // draw text
         let text_style1 = new PIXI.TextStyle({
             fontFamily: "Courier",
-            fontSize: 15 * (this.#width / this.base_width),
+            fontSize: 15 * (this.#scale),
             fill: 0x000000
         })
 
@@ -825,7 +831,7 @@ class MainMessagePage {
 
         let text_style2 = new PIXI.TextStyle({
             fontFamily: "Courier",
-            fontSize: 15 * (this.#width / this.base_width),
+            fontSize: 15 * (this.#scale),
             fill: 0xFFFFFF
         })
 
@@ -835,15 +841,15 @@ class MainMessagePage {
         name_text.pivot.y = name_text.height
 
         name_text.x = sprite.x - width / 2
-        name_text.y = sprite.y - sprite.height - message_text.height - 35 - name_text.height
+        name_text.y = sprite.y - sprite.height - message_text.height - (35 * this.#scale) - name_text.height
         
         message_text.pivot.x = message_text.width / 2
         message_text.pivot.y = 0
 
         message_text.x = sprite.x
-        message_text.y = sprite.y - sprite.height - message_text.height - 45 - name_text.height + 20
+        message_text.y = sprite.y - sprite.height - message_text.height - (45 * this.#scale) - name_text.height + (20 * this.#scale)
 
-        let height = message_text.height + 30
+        let height = message_text.height + (30 * this.#scale)
 
         // draw message box
         let message_box = new PIXI.Graphics()
@@ -851,20 +857,20 @@ class MainMessagePage {
 
         // main message box
         message_box.beginFill(0xFFFFFF)
-        message_box.drawRoundedRect(0, 0, width, height, 5)
+        message_box.drawRoundedRect(0, 0, width, height, (5 * this.#scale))
         message_box.endFill()
 
         // name box
         message_box.beginFill(0x333333)
-        message_box.drawRoundedRect(-10, -12 - name_text.height + 10, name_text.width + 22, name_text.height + 12, 10)
+        message_box.drawRoundedRect(-(10 * this.#scale), -(12 * this.#scale) - name_text.height + (10 * this.#scale), name_text.width + (22 * this.#scale), name_text.height + (12 * this.#scale), (10 * this.#scale))
         message_box.endFill()
 
         // down arrow
         message_box.beginFill(0xFFFFFF)
         message_box.drawPolygon([
-            width / 2 - 5, height,
-            width / 2 + 5, height,
-            width / 2, height + 5
+            width / 2 - (5 * this.#scale), height,
+            width / 2 + (5 * this.#scale), height,
+            width / 2, height + (5 * this.#scale)
         ])
         message_box.endFill()
 
@@ -897,26 +903,26 @@ class MainMessagePage {
         // down arrow
         button_bg.beginFill(0x222222, 1)
         button_bg.drawPolygon([
-            width / 2 - 10, height,
-            width / 2 + 10, height,
-            width / 2, height + 10
+            width / 2 - (10 * this.#scale), height,
+            width / 2 + (10 * this.#scale), height,
+            width / 2, height + (10 * this.#scale)
         ])
         button_bg.endFill()
 
         button_bg.pivot.x = width / 2
-        button_bg.pivot.y = height + 10
+        button_bg.pivot.y = height + (10 * this.#scale)
 
         let button_sprites = []
 
         buttons_en.forEach((el, i) => {
             let text_style1 = new PIXI.TextStyle({
                 fontFamily: "Courier",
-                fontSize: 30 * this.#width / this.base_width,
+                fontSize: 30 * this.#scale,
                 fill: 0xFFFFFF
             })
             let text_style2 = new PIXI.TextStyle({
                 fontFamily: "Courier",
-                fontSize: 30 * this.#width / this.base_width,
+                fontSize: 30 * this.#scale,
                 fill: 0x000000
             })
 
@@ -986,7 +992,7 @@ class MainMessagePage {
             }
 
             individual_button.x = 0
-            individual_button.y = button_height * (i-buttons_en.length +1) - button_height / 2 - 10
+            individual_button.y = button_height * (i-buttons_en.length +1) - button_height / 2 - (10 * this.#scale)
 
             button_sprites.push(individual_button)
             this.#ui_texts.get("japanese").push(text_jp)
@@ -1012,23 +1018,24 @@ class MainMessagePage {
         let info_msg = MainMessagePage.wrap(info.message, 33)
         let info_msg_alt = info.alt_message !== null ? MainMessagePage.wrap(info.alt_message, 33) : ""
 
-        let sc = this.#width / this.base_width
+        let sc = this.#scale
+        this.#type = "orig"
 
         info_msg = MainMessagePage.add_dash(info_msg, 33)
         info_msg_alt = MainMessagePage.add_dash(info_msg_alt, 33)
 
         let message = new PIXI.Graphics();
 
-        let arrow_width = 20
-        let arrow_height = 10
+        let arrow_width = (20 * this.#scale)
+        let arrow_height = (10 * this.#scale)
 
         // box shadow
         message.beginFill(0x000000, .5)
-        message.drawRect(5, 5, width, height)
+        message.drawRect((5 * this.#scale), (5 * this.#scale), width, height)
         message.drawPolygon([
-            width / 12 * 5 - arrow_width / 2 + 5, height + 5,
-            width / 12 * 5 + arrow_width / 2 + 5, height + 5,
-            width / 12 * 5 + arrow_width / 8 * 5 + 5, height + arrow_height + 5
+            width / 12 * 5 - arrow_width / 2 + (5 * this.#scale), height + (5 * this.#scale),
+            width / 12 * 5 + arrow_width / 2 + (5 * this.#scale), height + (5 * this.#scale),
+            width / 12 * 5 + arrow_width / 8 * 5 + (5 * this.#scale), height + arrow_height + (5 * this.#scale)
         ])
         message.endFill()
 
@@ -1062,8 +1069,8 @@ class MainMessagePage {
         let name_height = height / 8
 
         message.beginFill(0x000000, .5)
-        message.drawCircle(5, 5, name_height / 2)
-        message.drawRoundedRect(-name_height / 2 + 5, -name_height / 2 + 5, name_width + name_height / 2, name_height / 4 * 3, name_height / 2)
+        message.drawCircle((5 * this.#scale), (5 * this.#scale), name_height / 2)
+        message.drawRoundedRect(-name_height / 2 + (5 * this.#scale), -name_height / 2 + (5 * this.#scale), name_width + name_height / 2, name_height / 4 * 3, name_height / 2)
         message.endFill()
 
         message.beginFill(0xFFA657)
@@ -1084,7 +1091,7 @@ class MainMessagePage {
             }
 
             avatar = new PIXI.AnimatedSprite(avatar_texture)
-            avatar.animationSpeed = 1
+            avatar.animationSpeed = info.ava_animation_speed
             avatar.play()
         } else {
             avatar_texture = PIXI.Texture.from(img)
@@ -1108,7 +1115,7 @@ class MainMessagePage {
         // name
         let text_style1 = new PIXI.TextStyle({
             fontFamily: "Courier",
-            fontSize: 20 * (this.#width / this.base_width),
+            fontSize: 20 * (this.#scale),
             fill: 0xFFFFFF
         })
 
@@ -1121,7 +1128,7 @@ class MainMessagePage {
         // message
         let text_style2 = new PIXI.TextStyle({
             fontFamily: "Courier",
-            fontSize: 20 * (this.#width / this.base_width),
+            fontSize: 20 * (this.#scale),
             fill: 0x000000
         })
 
@@ -1159,25 +1166,25 @@ class MainMessagePage {
         let content_height = message_mask.height
 
         message_up.beginFill(0x000000, .5)
-        message_up.drawRect(7, 7, width/2 - 10, height / 16 - 10)
+        message_up.drawRect((7 * this.#scale), (7 * this.#scale), width/2 - (10 * this.#scale), height / 16 - (10 * this.#scale))
         message_up.endFill()
 
         message_up.beginFill(0xFFA657)
-        message_up.drawRect(5, 5, width/2 - 10, height / 16 - 10)
+        message_up.drawRect((5 * this.#scale), (5 * this.#scale), width/2 - (10 * this.#scale), height / 16 - (10 * this.#scale))
         message_up.endFill()
 
         message_up.beginFill(0xFEFEFE)
-        message_up.drawRect(7, 7, width/2 - 14, height/16 - 14)
+        message_up.drawRect((7 * this.#scale), (7 * this.#scale), width/2 - (14 * this.#scale), height/16 - (14 * this.#scale))
         message_up.endFill()
 
         message_up.beginFill(0x000000)
         message_up.drawPolygon([
-            width/4 - 5, height / 32 + 2.5 - arr_width / 2,
-            width/4, height / 32 - 2.5 - arr_width / 2,
-            width/4 + 5, height / 32 + 2.5 - arr_width / 2,
-            width/4 + 5, height / 32 + 2.5 + arr_width / 2,
-            width/4, height / 32 - 2.5 + arr_width / 2,
-            width/4 - 5, height / 32 + 2.5 + arr_width / 2
+            width/4 - (5 * this.#scale), height / 32 + (2.5 * this.#scale) - arr_width / 2,
+            width/4, height / 32 - (2.5 * this.#scale) - arr_width / 2,
+            width/4 + (5 * this.#scale), height / 32 +(2.5 * this.#scale) - arr_width / 2,
+            width/4 + (5 * this.#scale), height / 32 + (2.5 * this.#scale) + arr_width / 2,
+            width/4, height / 32 - (2.5 * this.#scale) + arr_width / 2,
+            width/4 - (5 * this.#scale), height / 32 + (2.5 * this.#scale) + arr_width / 2
         ])
         message_up.endFill()
 
@@ -1190,25 +1197,25 @@ class MainMessagePage {
         let message_down = new PIXI.Graphics()
 
         message_down.beginFill(0x000000, .5)
-        message_down.drawRect(7, 7, width/2 - 10, height / 16 - 10)
+        message_down.drawRect((7 * this.#scale), (7 * this.#scale), width/2 - (10 * this.#scale), height / 16 - (10 * this.#scale))
         message_down.endFill()
 
         message_down.beginFill(0xFFA657)
-        message_down.drawRect(5, 5, width/2 - 10, height / 16 - 10)
+        message_down.drawRect((5 * this.#scale), (5 * this.#scale), width/2 - (10 * this.#scale), height / 16 - (10 * this.#scale))
         message_down.endFill()
 
         message_down.beginFill(0xFEFEFE)
-        message_down.drawRect(7, 7, width/2 - 14, height/16 - 14)
+        message_down.drawRect((7 * this.#scale), (7 * this.#scale), width/2 - (14 * this.#scale), height/16 - (14 * this.#scale))
         message_down.endFill()
 
         message_down.beginFill(0x000000)
         message_down.drawPolygon([
-            width/4 - 5, height / 32 - 2.5 - arr_width / 2,
-            width/4, height / 32 + 2.5 - arr_width / 2,
-            width/4 + 5, height / 32 - 2.5 - arr_width / 2,
-            width/4 + 5, height / 32 - 2.5 + arr_width / 2,
-            width/4, height / 32 + 2.5 + arr_width / 2,
-            width/4 - 5, height / 32 - 2.5 + arr_width / 2
+            width/4 - (5 * this.#scale), height / 32 - (2.5 * this.#scale) - arr_width / 2,
+            width/4, height / 32 + (2.5 * this.#scale) - arr_width / 2,
+            width/4 + (5 * this.#scale), height / 32 - (2.5 * this.#scale) - arr_width / 2,
+            width/4 + (5 * this.#scale), height / 32 - (2.5 * this.#scale) + arr_width / 2,
+            width/4, height / 32 + (2.5 * this.#scale) + arr_width / 2,
+            width/4 - (5 * this.#scale), height / 32 -(2.5 * this.#scale) + arr_width / 2
         ])
         message_down.endFill()
 
@@ -1225,7 +1232,7 @@ class MainMessagePage {
             message_down.interactive = true
 
             message_up.pointertap = () => {
-                let offset = 20
+                let offset = (20 * this.#scale)
                 let content = null
 
                 if (this.#type === "orig") {
@@ -1244,7 +1251,7 @@ class MainMessagePage {
             }
 
             message_down.pointertap = () => {
-                let offset = 20
+                let offset = (20 * this.#scale)
                 let content = null
 
                 if (this.#type === "orig") {
@@ -1255,7 +1262,7 @@ class MainMessagePage {
 
                 if (content.y > top_y - content.height + content_height * .9 + offset) {
                     message_up.visible = true
-                    content.y -= 20
+                    content.y -= offset
                 } else {
                     content.y = top_y - content.height + content_height * .9
                     message_down.visible = false
@@ -1285,7 +1292,7 @@ class MainMessagePage {
             }
 
             art = new PIXI.AnimatedSprite(art_texture)
-            art.animationSpeed = .16
+            art.animationSpeed = info.art_animation_speed
             art.play()
         } else {
             art_texture = PIXI.Texture.from(img)
@@ -1300,14 +1307,14 @@ class MainMessagePage {
 
         // shadow
         art_bg.beginFill(0x000000, .5)
-        art_bg.drawRect(0 + 5, 0 + 5, art_bg_width, art_bg_height)
+        art_bg.drawRect(0 + (5 * this.#scale), 0 + (5 * this.#scale), art_bg_width, art_bg_height)
         art_bg.endFill()
 
         art_bg.beginFill(0xFEFEFE)
         art_bg.drawRect(0, 0, art_bg_width, art_bg_height)
         art_bg.endFill()
 
-        let line_width = 2
+        let line_width = (2 * this.#scale)
         let art_margin2 = art_bg.height / 32
         let active_width = art_bg_width - art_margin2 * 2 - line_width * 2
         let active_height = art_bg_height - art_margin2 * 2 - line_width * 2
@@ -1347,7 +1354,7 @@ class MainMessagePage {
             art_bg.pointertap = () => {
                 if (this.#state !== this.States.art_view) {
                     this.#state = this.States.art_view
-                    MainMessagePage.draw_art(art_texture)
+                    MainMessagePage.draw_art(art_texture, info)
                 }
             }
         }
@@ -1372,7 +1379,7 @@ class MainMessagePage {
 
         map_bg.pivot.x = map.width / 2
 
-        map_bg.x = map.x + 5
+        map_bg.x = map.x + (5 * this.#scale)
 
         // twitter
         let icon_cnt = 2
@@ -1383,7 +1390,7 @@ class MainMessagePage {
         let icon_bg = new PIXI.Graphics()
 
         icon_bg.beginFill(0xFFFFFF, .3)
-        icon_bg.drawRoundedRect(0, 0, width / 2 - art_margin * 2, height / 10, 20 * (this.#width / this.base_width))
+        icon_bg.drawRoundedRect(0, 0, width / 2 - art_margin * 2, height / 10, 20 * (this.#scale))
         icon_bg.endFill()
 
         icon_container.addChild(icon_bg)
@@ -1397,17 +1404,17 @@ class MainMessagePage {
         twitter_icon.anchor.x = .5
         twitter_icon.anchor.y = .5
 
-        twitter_icon.scale.x = (height / 10 - 5) / twitter_icon.width
-        twitter_icon.scale.y = (height / 10 - 5) / twitter_icon.height
+        twitter_icon.scale.x = (height / 10 - (5 * this.#scale)) / twitter_icon.width
+        twitter_icon.scale.y = (height / 10 - (5 * this.#scale)) / twitter_icon.height
 
         twitter_mask.beginFill(0xFFFFFF)
-        twitter_mask.drawCircle(0, 0, height / 20 - 5)
+        twitter_mask.drawCircle(0, 0, height / 20 - (5 * this.#scale))
         twitter_mask.endFill()
 
         twitter_icon.mask = twitter_mask
 
         twitter_shadow.beginFill(0x000000, .5)
-        twitter_shadow.drawCircle(2, 2, height / 20 - 5)
+        twitter_shadow.drawCircle((2 * this.#scale), (2 * this.#scale), height / 20 - (5 * this.#scale))
         twitter_shadow.endFill()
 
         twitter_cont.addChild(twitter_shadow)
@@ -1418,8 +1425,8 @@ class MainMessagePage {
             let unavailable = new PIXI.Graphics()
 
             unavailable.beginFill(0xFF2222)
-            unavailable.drawRect(-height / 20 - 5, -4, height / 10 + 10, 3)
-            unavailable.drawRect(-height / 20 - 5, 4, height / 10 + 10, 3)
+            unavailable.drawRect(-height / 20 - (5 * this.#scale), -(4 * this.#scale), height / 10 + (10 * this.#scale), (3 * this.#scale))
+            unavailable.drawRect(-height / 20 - (5 * this.#scale), (4 * this.#scale), height / 10 + (10 * this.#scale), (3 * this.#scale))
             unavailable.endFill()
 
             twitter_cont.addChild(unavailable)
@@ -1453,19 +1460,19 @@ class MainMessagePage {
         translate_icon.anchor.x = .5
         translate_icon.anchor.y = .5
 
-        translate_icon.scale.x = (height / 10 - 5) / translate_icon.width
-        translate_icon.scale.y = (height / 10 - 5) / translate_icon.height
+        translate_icon.scale.x = (height / 10 - (5 * this.#scale)) / translate_icon.width
+        translate_icon.scale.y = (height / 10 - (5 * this.#scale)) / translate_icon.height
 
         translate_bg.beginFill(0x000000, .5)
-        translate_bg.drawRoundedRect(2, 2, height / 10 - 5, height / 10 - 5, 10)
+        translate_bg.drawRoundedRect((2 * this.#scale), (2 * this.#scale), height / 10 - (5 * this.#scale), height / 10 - (5 * this.#scale), (10 * this.#scale))
         translate_bg.endFill()
 
         translate_bg.beginFill(0xFFFFFF)
-        translate_bg.drawRoundedRect(0, 0, height / 10 - 5, height / 10 - 5, 10)
+        translate_bg.drawRoundedRect(0, 0, height / 10 - (5 * this.#scale), height / 10 - (5 * this.#scale), (10 * this.#scale))
         translate_bg.endFill()
 
-        translate_bg.pivot.x = (height / 10 - 5) / 2
-        translate_bg.pivot.y = (height / 10 - 5) / 2
+        translate_bg.pivot.x = (height / 10 - (5 * this.#scale)) / 2
+        translate_bg.pivot.y = (height / 10 - (5 * this.#scale)) / 2
 
         translate_cont.addChild(translate_bg)
         translate_cont.addChild(translate_icon)
@@ -1474,8 +1481,8 @@ class MainMessagePage {
             let unavailable = new PIXI.Graphics()
 
             unavailable.beginFill(0xFF2222)
-            unavailable.drawRect(-height / 20 - 5, -4, height / 10 + 10, 3)
-            unavailable.drawRect(-height / 20 - 5, 4, height / 10 + 10, 3)
+            unavailable.drawRect(-height / 20 - (5 * this.#scale), -(4 * this.#scale), height / 10 + (10 * this.#scale), (3 * this.#scale))
+            unavailable.drawRect(-height / 20 - (5 * this.#scale), (4 * this.#scale), height / 10 + (10 * this.#scale), (3 * this.#scale))
             unavailable.endFill()
 
             translate_cont.addChild(unavailable)
@@ -1502,12 +1509,28 @@ class MainMessagePage {
                 message_content_alt.visible = false
                 message_content_orig.visible = true
                 message_content_orig.y = height / 13 * 1.5 + height / 32 + message_content_orig.height
+
+                if (message_content_orig.height > message_mask.height) {
+                    message_up.visible = true
+                    message_down.visible = true
+                } else {
+                    message_up.visible = false
+                    message_down.visible = false
+                }
             } else {
                 translate_icon.texture = translate_texture
                 this.#type = "alt"
                 message_content_alt.visible = true
                 message_content_orig.visible = false
                 message_content_alt.y = height / 13 * 1.5 + height / 32 + message_content_alt.height
+
+                if (message_content_alt.height > message_mask.height) {
+                    message_up.visible = true
+                    message_down.visible = true
+                } else {
+                    message_up.visible = false
+                    message_down.visible = false
+                }
             }
         }
 
@@ -1518,24 +1541,24 @@ class MainMessagePage {
         icon_container.x = width / 4 * 3
 
         let total_height = height - art_margin * 2
-        let occupied_height = art_bg.height + map.height + icon_container.height + 5
+        let occupied_height = art_bg.height + map.height + icon_container.height + (5 * this.#scale)
         let total_left_over = total_height - occupied_height
         let intervals = total_left_over / 2
         
         art.y = art_margin + art_margin2 + line_width
         art_bg.y = art_margin
         map.y = art_bg.y + art_bg.height + intervals
-        map_bg.y = map.y + 5
+        map_bg.y = map.y + (5 * this.#scale)
         icon_container.y = map_bg.y + map.height + intervals
 
         let message_left = new PIXI.Graphics()
         let message_right = new PIXI.Graphics()
 
-        let button_size = 50 * this.#width / this.base_width
-        let side_button_dist = 20 * this.#width / this.base_width
+        let button_size = 50 * this.#scale
+        let side_button_dist = 20 * this.#scale
 
         message_left.beginFill(0x000000, .5)
-        message_left.drawRoundedRect(5, 5, button_size, button_size, button_size * .25)
+        message_left.drawRoundedRect((5 * this.#scale), (5 * this.#scale), button_size, button_size, button_size * .25)
         message_left.endFill()
 
         message_left.beginFill(0xFFA657)
@@ -1554,7 +1577,7 @@ class MainMessagePage {
         message_left.endFill()
 
         message_right.beginFill(0x000000, .5)
-        message_right.drawRoundedRect(5, 5, button_size, button_size, button_size * .25)
+        message_right.drawRoundedRect((5 * this.#scale), (5 * this.#scale), button_size, button_size, button_size * .25)
         message_right.endFill()
         
         message_right.beginFill(0xFFA657)
@@ -1585,20 +1608,20 @@ class MainMessagePage {
 
         message_left.interactive = true
         message_left.pointertap = () => {
-            this.#msg_index = (((this.#msg_index + 1) % this.#pekomons.length) + this.#pekomons.length) % this.#pekomons.length
+            this.#msg_index = (((this.#msg_x_index + 1) % this.#pekomons.length) + this.#pekomons.length) % this.#pekomons.length
             this.#pekomons[this.#msg_index].sprite.pointertap()
         }
 
         message_right.interactive = true
         message_right.pointertap = () => {
-            this.#msg_index = (((this.#msg_index - 1) % this.#pekomons.length) + this.#pekomons.length) % this.#pekomons.length
+            this.#msg_index = (((this.#msg_x_index - 1) % this.#pekomons.length) + this.#pekomons.length) % this.#pekomons.length
             this.#pekomons[this.#msg_index].sprite.pointertap()
         }
 
         let msg_del = new PIXI.Graphics()
 
         msg_del.beginFill(0x000000, .5)
-        msg_del.drawCircle(5, 0, 25 * sc)
+        msg_del.drawCircle((5 * this.#scale), 0, 25 * sc)
         msg_del.endFill()
 
         msg_del.beginFill(0xFFFFFF)
@@ -1650,23 +1673,31 @@ class MainMessagePage {
         return container
     }
 
-    static draw_art(art_texture) {
+    static draw_art(art_texture, info) {
         let bg_shadow = new PIXI.Graphics()
         let bg_del = new PIXI.Graphics()
         let bg = new PIXI.Graphics()
-        let art = new PIXI.Sprite(art_texture)
+        let art
+        if (info.has_gif_fan_art) {
+            art = new PIXI.AnimatedSprite(art_texture)
+
+            art.animationSpeed = info.art_animation_speed
+            art.play()
+        } else {
+            art = new PIXI.Sprite(art_texture)
+        }
         let cont = new PIXI.Container()
 
-        let sc = this.#width / this.base_width
+        let sc = this.#scale
 
         let border = 50 * sc
         let hl_line = 5 * sc
 
-        let active_width = this.#width - border * 2 - 40 - hl_line * 2
-        let active_height = this.#height - border * 2 - 40 - hl_line * 2
+        let active_width = this.#width - border * 2 - (40 * this.#scale) - hl_line * 2
+        let active_height = this.#height - border * 2 - (40 * this.#scale) - hl_line * 2
 
         bg_shadow.beginFill(0x000000, .8)
-        bg_shadow.drawRect(-5, -5, this.#width + 10, this.#height + 10)
+        bg_shadow.drawRect(-(5 * this.#scale), -(5 * this.#scale), this.#width + (10 * this.#scale), this.#height + (10 * this.#scale))
         bg_shadow.endFill()
 
         bg_shadow.beginHole()
@@ -1692,11 +1723,11 @@ class MainMessagePage {
         bg.endFill()
 
         bg.beginFill(0xFFA657)
-        bg.drawRect(border + 20, border + 20, this.#width - border * 2 - 40, this.#height - border * 2 - 40)
+        bg.drawRect(border + (20 * this.#scale), border + (20 * this.#scale), this.#width - border * 2 - (40 * this.#scale), this.#height - border * 2 - (40 * this.#scale))
         bg.endFill()
 
         bg.beginFill(0xFFFFFF)
-        bg.drawRect(border + 20 + hl_line, border + 20 + hl_line, active_width, active_height)
+        bg.drawRect(border + (20 * this.#scale) + hl_line, border + (20 * this.#scale) + hl_line, active_width, active_height)
         bg.endFill()
 
         let asp_art = art.width / art.height
@@ -1753,12 +1784,12 @@ class MainMessagePage {
         let bgm_button = new PIXI.Container()
         let lang_button = new PIXI.Container()
 
-        let button_size = 50 * this.#width / this.base_width
-        let arrow_width = 4 * this.#width / this.base_width
-        let sc = this.#width / this.base_width
+        let button_size = 50 * this.#scale
+        let arrow_width = 4 * this.#scale
+        let sc = this.#scale
 
         back_button.beginFill(0x000000, .5)
-        back_button.drawRoundedRect(5, 5, button_size, button_size, button_size * .25)
+        back_button.drawRoundedRect((5 * this.#scale), (5 * this.#scale), button_size, button_size, button_size * .25)
         back_button.endFill()
 
         back_button.beginFill(0x444444)
@@ -1787,7 +1818,7 @@ class MainMessagePage {
             let state = 0
 
             white_screen.beginFill(0x000000)
-            white_screen.drawRect(-5, -5, this.#width + 10, this.#height + 10)
+            white_screen.drawRect(-(5 * this.#scale), -(5 * this.#scale), this.#width + (10 * this.#scale), this.#height + (10 * this.#scale))
             white_screen.endFill()
 
             white_screen.alpha = 0
@@ -1839,14 +1870,14 @@ class MainMessagePage {
         let bgm_spr = new PIXI.Sprite(sound_off)
 
         bgm_bg.beginFill(0x000000, .5)
-        bgm_bg.drawRoundedRect(5, 5, button_size, button_size, button_size * .25)
+        bgm_bg.drawRoundedRect((5 * this.#scale), (5 * this.#scale), button_size, button_size, button_size * .25)
         bgm_bg.endFill()
 
         bgm_bg.beginFill(0x444444)
         bgm_bg.drawRoundedRect(0, 0, button_size, button_size, button_size * .25)
         bgm_bg.endFill()
 
-        let bgm_scale = (button_size - 5 * sc) / bgm_spr.width
+        let bgm_scale = (button_size - (5 * this.#scale) * sc) / bgm_spr.width
 
         bgm_spr.scale.x = bgm_scale
         bgm_spr.scale.y = bgm_scale
@@ -1884,7 +1915,7 @@ class MainMessagePage {
         let lang_outline = new PIXI.Graphics()
 
         lang_bg.beginFill(0x000000, .5)
-        lang_bg.drawRoundedRect(5, 5, button_size, button_size, button_size * .25)
+        lang_bg.drawRoundedRect((5 * this.#scale), (5 * this.#scale), button_size, button_size, button_size * .25)
         lang_bg.endFill()
 
         lang_mask.beginFill(0xFFFFFF)
@@ -1896,10 +1927,10 @@ class MainMessagePage {
         lang_outline.endFill()
 
         lang_outline.beginHole()
-        lang_outline.drawRoundedRect(1, 1, button_size - 2, button_size - 2, button_size * .25)
+        lang_outline.drawRoundedRect((1 * this.#scale), (1 * this.#scale), button_size - 2, button_size - 2, button_size * .25)
         lang_outline.endFill()
 
-        let lang_scale = (button_size * sc + button_size / 4) / lang_spr.width
+        let lang_scale = (button_size + button_size / 16) / lang_spr.width
 
         lang_spr.scale.x = lang_scale
         lang_spr.scale.y = lang_scale
@@ -2003,7 +2034,7 @@ class MainMessagePage {
 
         let byteSize = (str) => new Blob([str]).size;
         for (const c of text) {
-            cnt += byteSize(c) > 1 ? 2 : 1
+            cnt += byteSize(c) > 1 ? 1.75 : 1
 
             if (cnt >= width && c !== "\n") {
                 new_text += "\n"

@@ -1,13 +1,15 @@
 node_modules/**
 public/*
 scripts/img/*
-scripts/data
 scripts/loader.js
+scripts/database.js
 src/profile/*
 
 node_modules/
 public/
 scripts/img/
 src/profile/
+gif_temp/**/*
+dist/*.map
 
 #CutieCutieSexyBeautyWonderfulBunnyGirlIsJustice

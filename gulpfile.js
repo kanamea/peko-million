@@ -15,7 +15,7 @@ gulp.task('dwebp', () => {
 });
 
 gulp.task('squash', () => {
-  return gulp.src('./public/*.{png,jpeg,tiff,svg}')
+  return gulp.src('./public/*.{png,jpeg,tiff,svg,jpg}')
     .pipe(imageresize({width: 1000}))
     .pipe(imagemin())
     .pipe(gulp.dest("./src/profile"))

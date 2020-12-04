@@ -5,7 +5,7 @@ import MainMessagePage from './js/message_main.js'
 // with a fallback to a canvas render. It will also setup the ticker
 // and the root stage PIXI.Container
 const app = new PIXI.Application();
-PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
+//PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
 let ratio = window.innerWidth / window.innerHeight
 let width, height
