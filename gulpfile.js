@@ -16,7 +16,7 @@ gulp.task('dwebp', () => {
 
 gulp.task('squash', () => {
   return gulp.src('./public/*.{png,jpeg,tiff,svg,jpg}')
-    .pipe(imageresize({width: 1000}))
+    .pipe(imageresize({width: 512}))
     .pipe(imagemin())
     .pipe(gulp.dest("./src/profile"))
 });
@@ -51,6 +51,7 @@ gulp.task('giftopack', () => {
 
   fs.readdirSync('./gif_temp/').forEach((dirname) => {
     tasks.push(gulp.src('./gif_temp/' + dirname + "/*.png")
+      .pipe(imageresize({width: 512}))
       .pipe(imagemin())
       .pipe(spritesmith({
         imgName: dirname + ".png",
