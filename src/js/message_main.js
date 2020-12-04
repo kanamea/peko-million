@@ -196,8 +196,8 @@ class MainMessagePage {
                 this.#sprites.set("organize", org)
 
                 let sort = this.#create_buttons(this.#width / 4, this.#width / 36, this.#width / 16 * 7 - this.#width / 30, this.#height / 3 * 2,
-                    ["Sort by:", "Name", "Region", "Fan Art", "Unread", "Random"],
-                    ["並び順", "名前", "地域", "ファンアート", "未読", "ランダム"],
+                    ["Sort by:", "Name", "Region", "Fan Art", "Random"],
+                    ["並び順", "名前", "地域", "ファンアート", "ランダム"],
                     [
                         false,
                         () => {
@@ -224,17 +224,6 @@ class MainMessagePage {
                         },
                         () => {
                             this.sort_by(3)
-
-                            this.#sprites.get("back_button").visible = true
-                            this.#animation_state = this.AnimationStates.moving_pekomon
-                            this.#state = this.States.pekomon_select
-                            this.#sprites.get("sort").visible = false
-                            this.#sprites.get("pekomons_name").forEach((el) => {
-                                el.visible = true
-                            })
-                        },
-                        () => {
-                            this.sort_by(4)
 
                             this.#sprites.get("back_button").visible = true
                             this.#animation_state = this.AnimationStates.moving_pekomon
