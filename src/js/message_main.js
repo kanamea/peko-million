@@ -44,7 +44,7 @@ class MainMessagePage {
     static #app
     static #scroll
     static #animations
-    static #bgm = new Audio('./bgm/pekorap.mp3')
+    static #bgm = new Audio('./bgm/tanukichi.mp3')
     static #ui_texts
     static #lang
     static #msg_x_index
